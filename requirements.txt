@@ -1,0 +1,9 @@
+langchain
+langchain-huggingface
+torch
+git+https://github.com/huggingface/transformers
+accelerate
+bitsandbytes
+safetensors
+sentencepiece
+langchain-google-genai
