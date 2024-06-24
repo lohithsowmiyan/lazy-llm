@@ -21,14 +21,14 @@ class Auto93Template(Template):
     def __init__(self, system_message : str = None, human_message : str = None):
         super().__init__(system_message, human_message)
         if not self.system_message:
-            self.system_message = "As an excellent car sales consultant, you are provided with the specifications of two cars. Your task is to analyze the given attributes and recommend which car is better. Here are the attributes for each car: Number of cylinder, Volume, Horsepower, Model,Origin."
-            
+            self.system_message = "As an excellent car sales consultant, you are provided with the specifications of two cars. Your task is to analyze the given attributes and recommend which car is better. Here are the attributes for each car provided in the same order in a list: Number of Clndrs (Number of cylinders), Volume (Volume of the car), HpX (Horsepower of the car), Model (Model of the car), origin (Origin of the car)."
+
         if not self.human_message:
             self.human_message = """
-            Based on these attributes, suggest if the following example falls into best or rest or an outlier.
+            Based on these attributes, answer in one word if the following car falls into best or rest or an outlier.
             """
 
-    def getZeroShot(self, best : rows = None, rest : rows = None) -> ChatPromptTemplate:
+    def getZeroShot(self, best : rows =  None, rest : rows =  None) -> ChatPromptTemplate:
         """
             Returns a Zero Shot template
             ------------------------------------
@@ -44,8 +44,8 @@ class Auto93Template(Template):
             -------------------------------------
         """
         examples = f"""
-          Best: {best}
-          Rest: {rest}
+          Best: {[b[:5] for b in best]}
+          Rest: {[r[:5] for r in rest]}
         """
         prompt = ChatPromptTemplate.from_messages(
             [
