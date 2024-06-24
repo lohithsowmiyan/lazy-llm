@@ -47,7 +47,7 @@ class Local_LLM(LLM):
                 bnb_8bit_compute_dtype=torch.bfloat16  
             )
 
-    def get_model() -> HuggingFacePipeline:
+    def get_model(self) -> HuggingFacePipeline:
         pipe = pipeline(
                "text-generation",
                 model= self.model,
@@ -59,7 +59,7 @@ class Local_LLM(LLM):
 
         return HuggingFacePipeline(pipeline = pipe)
 
-    def get_model_with_quantization() -> HuggingFacePipeline:
+    def get_model_with_quantization(self) -> HuggingFacePipeline:
         if not self.quantization:
             raise Exception("Your model does not have necessary quantization config setup")
         self.model = AutoModelForCausalLM.from_pretrained(self.model_name, quantization_config = self.bnb_config)
@@ -73,13 +73,13 @@ class API_LLM(LLM):
     def __init__(self, model_name : str, temperature : float, max_tokens : int, top_p : float, **kwargs):
         super().__init__(model_name, temperature, max_tokens, top_p)
 
-    def get_model():
+    def get_model(self):
         if "gemini" in self.model_name:
             if "GOOGLE_API_KEY" not in os.environ:
                 print("Unable to find the API key please enter here:")
                 os.environ["GOOGLE_API_KEY"] = getpass.getpass()
             return ChatGoogleGenerativeAI(
-                        model= self.model_name
+                        model= self.model_name,
                         temperature= self.temperature,  
                         max_tokens= self.max_tokens, 
                         top_p= self.top_p
@@ -90,7 +90,7 @@ class API_LLM(LLM):
                 print("Unable to find the API key please enter here:")
                 os.environ["OPENAI_API_KEY"] = getpass.getpass()
             return OpenAI(
-                        model= self.model_name
+                        model= self.model_name,
                         temperature= self.temperature,  
                         max_tokens= self.max_tokens, 
                         top_p= self.top_p

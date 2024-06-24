@@ -7,4 +7,5 @@ bitsandbytes
 safetensors
 sentencepiece
 langchain-google-genai
+langchain-openai
 python-dotenv
