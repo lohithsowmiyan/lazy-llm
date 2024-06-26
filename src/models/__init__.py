@@ -20,7 +20,7 @@ def load_model(args) -> LLM:
         return API_LLM(api_model_path[args.llm], args.temperature, args.max_tokens, args.top_p)
 
     elif args.llm in local_model_path.keys():
-        return Local_LLM(model_path[args.llm], args.temperature, args.max_tokens, args.top_p, quantization =  args.quantization, nbits = args.q_bits),
+        return Local_LLM(local_model_path[args.llm], args.temperature, args.max_tokens, args.top_p, quantization =  args.quantization, nbits = args.q_bits)
 
     else:
         raise Exception("Model Not Found. Add the Model to src/models/__init__.py")

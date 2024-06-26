@@ -26,7 +26,6 @@ class Local_LLM(LLM):
     """
     def __init__(self, model_name : str, temperature : float, max_tokens : int, top_p : float, **kwargs):
         super().__init__(model_name, temperature, max_tokens, top_p)
-        self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.quantization = kwargs.get('quantization', False)
         self.quant_bits = kwargs.get('nbits', 8)
@@ -48,13 +47,15 @@ class Local_LLM(LLM):
             )
 
     def get_model(self) -> HuggingFacePipeline:
+        self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
         pipe = pipeline(
                "text-generation",
                 model= self.model,
                 tokenizer= self.tokenizer,
                 max_new_tokens= self.max_tokens, 
                 temperature= self.temperature, 
-                top_p= self.top_p  
+                top_p= self.top_p,
+                do_sample = True 
                )
 
         return HuggingFacePipeline(pipeline = pipe)
@@ -63,7 +64,15 @@ class Local_LLM(LLM):
         if not self.quantization:
             raise Exception("Your model does not have necessary quantization config setup")
         self.model = AutoModelForCausalLM.from_pretrained(self.model_name, quantization_config = self.bnb_config)
-        return get_model()
+        pipe = pipeline(
+               "text-generation",
+                model= self.model,
+                tokenizer= self.tokenizer,
+                max_new_tokens= self.max_tokens, 
+                temperature= self.temperature, 
+                top_p= self.top_p, 
+                do_sample = True  
+               )
 
 
 class API_LLM(LLM):
@@ -95,12 +104,6 @@ class API_LLM(LLM):
                         max_tokens= self.max_tokens, 
                         top_p= self.top_p
                 )
-
-
-        
-
-
-
 
 
         

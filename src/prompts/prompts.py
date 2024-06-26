@@ -18,15 +18,13 @@ class Auto93Template(Template):
     """
 
     """
-    def __init__(self, system_message : str = None, human_message : str = None):
+    def __init__(self, prefix : str = None, suffix : str = None):
         super().__init__(system_message, human_message)
         if not self.system_message:
-            self.system_message = "As an excellent car sales consultant, you are provided with the specifications of two cars. Your task is to analyze the given attributes and recommend which car is better. Here are the attributes for each car provided in the same order in a list: Number of Clndrs (Number of cylinders), Volume (Volume of the car), HpX (Horsepower of the car), Model (Model of the car), origin (Origin of the car)."
+            self.prefix = "You are an excellent car sales consultant, you need to evaluate the specifications of a car and answer in one word if the car falls into best or rest categories. Here are the attributes provided for each car in the same order: Number of Cylinders, Volume, Horsepower, Model, Origin."
 
         if not self.human_message:
-            self.human_message = """
-            Based on these attributes, answer in one word if the following car falls into best or rest or an outlier.
-            """
+            self.suffix = "Based on the above examples attributes, Striclty answer in one word if the following car is similar to  best cars or rest cars"
 
     def getZeroShot(self, best : rows =  None, rest : rows =  None) -> ChatPromptTemplate:
         """
@@ -43,16 +41,13 @@ class Auto93Template(Template):
                 None
             -------------------------------------
         """
-        examples = f"""
-          Best: {[b[:5] for b in best]}
-          Rest: {[r[:5] for r in rest]}
-        """
+        examples = f"  These are the examples for best cars: {[b[:5] for b in best]}, These are the examples of rest cars: {[r[:5] for r in rest]}"
+
         prompt = ChatPromptTemplate.from_messages(
             [
-                ("system", self.system_message),
+                ("system", self.prefix),
                 ("human", examples),
-                ("human", "{input}"),
-                ("human", self.human_message)
+                ("human", self.suffix + "{input}"),   
             ]
         )
         return prompt
