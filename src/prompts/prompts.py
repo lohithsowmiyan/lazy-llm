@@ -5,12 +5,12 @@ class Template():
     """
     
     """
-    def __init__(self, system_message : str = None, human_message : str = None, **kwargs):
-        self.system_message = system_message
-        self.human_message = human_message
+    def __init__(self, prefix : str = None, suffix : str = None, **kwargs):
+        self.prefix = prefix
+        self.suffix = suffix
 
     def __repr__(self):
-        return f'Template(system_message = {self.system_message}, human_message = {self.human_message})'
+        return f'Template(prefix = {self.prefix}, suffix = {self.suffix})'
 
     #def _createPairs():
     
@@ -19,11 +19,11 @@ class Auto93Template(Template):
 
     """
     def __init__(self, prefix : str = None, suffix : str = None):
-        super().__init__(system_message, human_message)
-        if not self.system_message:
+        super().__init__(prefix, suffix)
+        if not self.prefix:
             self.prefix = "You are an excellent car sales consultant, you need to evaluate the specifications of a car and answer in one word if the car falls into best or rest categories. Here are the attributes provided for each car in the same order: Number of Cylinders, Volume, Horsepower, Model, Origin."
-
-        if not self.human_message:
+ 
+        if not self.suffix:
             self.suffix = "Based on the above examples attributes, Striclty answer in one word if the following car is similar to  best cars or rest cars"
 
     def getZeroShot(self, best : rows =  None, rest : rows =  None) -> ChatPromptTemplate:
