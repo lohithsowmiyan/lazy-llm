@@ -1,5 +1,5 @@
 from langchain_core.prompts import ChatPromptTemplate, FewShotChatMessagePromptTemplate
-from src.utils.ezr import rows
+from src.utils.ezr import rows,row
 
 class Template():
     """
@@ -68,6 +68,18 @@ class Auto93Template(Template):
     #             None
     #         -------------------------------------
     #     """
+
+    def getTemplate(self, best : rows =  None, rest : rows =  None, current : row = None):
+
+        messages = [
+        {"role": "system", "content": " You are an excellent car sales consultant, you need to evaluate the specifications of a car and answer in one word if the car falls into best or rest categories. Here are the attributes provided for each car in the same order: Number of Cylinders, Volume, Horsepower, Model, Origin"},
+        {"role": "user", "content": f"""These are the examples for best cars: {best}, These are the examples of rest cars: {rest}"""},
+        {"role": "user", "content": f""" Based on the above examples attributes, answer in one word if the following car is similar to best cars or rest cars {current}"""}
+        ]
+
+        return messages
+
+        
 
 
         

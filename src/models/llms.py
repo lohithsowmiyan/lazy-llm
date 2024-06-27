@@ -54,11 +54,20 @@ class Local_LLM(LLM):
                 tokenizer= self.tokenizer,
                 max_new_tokens= self.max_tokens, 
                 temperature= self.temperature, 
+
                 top_p= self.top_p,
                 do_sample = True 
                )
 
         return HuggingFacePipeline(pipeline = pipe)
+
+    def get_pipeline(self):
+        pipe = pipeline(
+         "text-generation",
+         model=self.model_name,
+        )
+
+        return pipe
 
     def get_model_with_quantization(self) -> HuggingFacePipeline:
         if not self.quantization:
