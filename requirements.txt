@@ -9,3 +9,4 @@ sentencepiece
 langchain-google-genai
 langchain-openai
 python-dotenv
+jinja2>=3.1.0

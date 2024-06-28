@@ -72,7 +72,7 @@ def vanilla1(args):
         sd=int(num.sd*n/2)
         mu=int(num.mu*n)
         print(" "*(mu-sd), "-"*sd,"+"*sd,sep="")
-        record = o(the = "result", N = len(lst), Mu = num.mu, Sd = num.sd, Var = " "*(mu-sd) + "-"*sd + "+"*sd)
+        record = o(the = "result", N = len(lst), Mu = format(num.mu,".2f"), Sd = format(num.sd, ".2f"), Var = " "*(mu-sd) + "-"*sd + "+"*sd)
         records.append(record)
 
     def learner(i:data, callBack=lambda x:x):
@@ -104,7 +104,7 @@ def vanilla1(args):
         def _smo1(todo:rows, done:rows) -> rows:
             "Guess the `top`  unlabeled row, add that to `done`, resort `done`, and repeat"
             for k in todo:
-                if len(done) > 30: break
+                if len(done) >= 30: break
                 top = llm_guesser(k, done)
                 if(top == None): continue
                 print(d2h(i,top))
@@ -116,12 +116,13 @@ def vanilla1(args):
         return _smo1(i.rows[4:], _ranked(i.rows[:4]))
 
     learner(DATA(csv(args.dataset)), _tile)
-    return save_results(learner = args.model_name + args.dataset, records =  records)
+    return save_results(model = args.model + "_" + args.llm, dataset = args.dataset, records =  records)
 
 if __name__ == "__main__":
     load_dotenv()
     args = parse_arguments()
     vanilla1(args)
+    #print(save_results())
 
 
 
