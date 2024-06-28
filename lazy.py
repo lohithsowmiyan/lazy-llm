@@ -3,6 +3,7 @@ from src.utils.ezr import *
 from src.models import load_model
 from dotenv import load_dotenv
 from src.prompts import load_prompt
+from src.utils.results import save_results
 import warnings
 import time
 
@@ -62,6 +63,8 @@ def vanilla1(args):
     warnings.filterwarnings("ignore")
     model =  load_model(args).get_pipeline()
 
+    records = []
+
     def _tile(lst):
         num = adds(NUM(),lst)
         n=100
@@ -69,6 +72,8 @@ def vanilla1(args):
         sd=int(num.sd*n/2)
         mu=int(num.mu*n)
         print(" "*(mu-sd), "-"*sd,"+"*sd,sep="")
+        record = o(the = "result", N = len(lst), Mu = num.mu, Sd = num.sd, Var = " "*(mu-sd) + "-"*sd + "+"*sd)
+        records.append(record)
 
     def learner(i:data, callBack=lambda x:x):
         """
@@ -91,7 +96,7 @@ def vanilla1(args):
             prompt = model.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
             model.model.config.pad_token_id = model.model.config.eos_token_id
             outputs = model(prompt, max_new_tokens=256,  do_sample=True, temperature=0.5, top_p=0.9) #eos_token_id=terminators,
-            print(outputs[0]['generated_text'])
+            #print(outputs[0]['generated_text'])
             if "best" in outputs[0]['generated_text'][len(prompt):].lower(): return current
             return None
             
@@ -111,9 +116,12 @@ def vanilla1(args):
         return _smo1(i.rows[4:], _ranked(i.rows[:4]))
 
     learner(DATA(csv(args.dataset)), _tile)
+    return save_results(learner = args.model_name + args.dataset, records =  records)
 
 if __name__ == "__main__":
     load_dotenv()
     args = parse_arguments()
     vanilla1(args)
+
+
 
