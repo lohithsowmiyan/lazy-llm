@@ -8,7 +8,9 @@ local_model_path = {
     "llama2-7b" : "meta-llama/Llama-2-7b-chat-hf",
     "llama3-8b" : "meta-llama/Meta-Llama-3-8B-Instruct",
     "mistral" : "filipealmeida/Mistral-7B-Instruct-v0.1-sharded",
-    "phi3" : "microsoft/Phi-3-mini-4k-instruct"
+    "phi3-mini" : "microsoft/Phi-3-mini-4k-instruct",
+    "phi3-medium" : "microsoft/Phi-3-medium-4k-instruct"
+
 }
 
 def load_model(args) -> LLM:

@@ -3,7 +3,7 @@ from src.utils.ezr import *
 from src.models import load_model
 from dotenv import load_dotenv
 from src.prompts import load_prompt
-from src.utils.results import save_results
+from src.utils.results import save_results_txt
 import warnings
 import time
 
@@ -62,27 +62,27 @@ def vanilla(args):
 def vanilla1(args):
     warnings.filterwarnings("ignore")
     model =  load_model(args).get_pipeline()
-
+    random.seed(args.seed)
     records = []
 
-    def _tile(lst):
+    def _tile(lst, curd2h, budget):
         num = adds(NUM(),lst)
         n=100
         print(f"{len(lst):5} : {num.mu:5.3} ({num.sd:5.3})",end="")
         sd=int(num.sd*n/2)
         mu=int(num.mu*n)
         print(" "*(mu-sd), "-"*sd,"+"*sd,sep="")
-        record = o(the = "result", N = len(lst), Mu = format(num.mu,".2f"), Sd = format(num.sd, ".2f"), Var = " "*(mu-sd) + "-"*sd + "+"*sd)
+        record = o(the = "result", N = len(lst), Mu = format(num.mu,".2f"), Sd = format(num.sd, ".2f"), Var = " "*(mu-sd) + "-"*sd + "+"*sd, Curd2h = curd2h, Budget = budget)
         records.append(record)
 
     def learner(i:data, callBack=lambda x:x):
         """
         
         """
-        def _ranked(lst:rows) -> rows:
+        def _ranked(lst:rows, cur:row = None, budget:int = 0) -> rows:
             "Sort `lst` by distance to heaven. Called by `_smo1()`."
             lst = sorted(lst, key = lambda r:d2h(i,r))
-            _tile([d2h(i,r) for r in lst])
+            _tile([d2h(i,r) for r in lst], None if cur == None else d2h(i,cur), budget)
             # print(d2h of the best row)
             return lst
 
@@ -96,27 +96,29 @@ def vanilla1(args):
             prompt = model.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
             model.model.config.pad_token_id = model.model.config.eos_token_id
             outputs = model(prompt, max_new_tokens=256,  do_sample=True, temperature=0.5, top_p=0.9) #eos_token_id=terminators,
-            #print(outputs[0]['generated_text'])
+            print(outputs[0]['generated_text']) if args.intermediate else None
             if "best" in outputs[0]['generated_text'][len(prompt):].lower(): return current
             return None
             
         
         def _smo1(todo:rows, done:rows) -> rows:
             "Guess the `top`  unlabeled row, add that to `done`, resort `done`, and repeat"
+            count = 0
             for k in todo:
+                count += 1
                 if len(done) >= 30: break
                 top = llm_guesser(k, done)
                 if(top == None): continue
                 print(d2h(i,top))
                 done += [top]
-                done = _ranked(done)
+                done = _ranked(done, top, count)
             return done
 
         random.shuffle(i.rows)
         return _smo1(i.rows[4:], _ranked(i.rows[:4]))
 
     learner(DATA(csv(args.dataset)), _tile)
-    return save_results(model = args.model + "_" + args.llm, dataset = args.dataset, records =  records)
+    return save_results_txt(model = args.model + "_" + args.llm, dataset = args.dataset, records =  records)
 
 if __name__ == "__main__":
     load_dotenv()

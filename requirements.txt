@@ -1,6 +1,7 @@
 langchain
 langchain-huggingface
 torch
+jinja2>=3.1.0
 git+https://github.com/huggingface/transformers
 accelerate
 bitsandbytes
@@ -9,4 +10,3 @@ sentencepiece
 langchain-google-genai
 langchain-openai
 python-dotenv
-jinja2>=3.1.0

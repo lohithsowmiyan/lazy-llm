@@ -6,9 +6,13 @@ def parse_arguments():
 
     parser.add_argument('-d','--dataset', type = str, default = "data/misc/auto93.csv", help = "Dataset [auto93, WineQuality, HPO, ...]")
     parser.add_argument('-m', '--model', type = str, default ="vanilla", help ="Strategy")
+
+
+    #Explanation
+    parser.add_argument('--intermediate', type = bool, default = False, help = "show llm output for each step True/ False")
     
      
-    #Model Configurations
+    #LLM Configurations
     parser.add_argument('-l','--llm', type = str, default ="gemini", help = "LLM Model [Llama, Mistral, Gemini, GPT, ...]")
     parser.add_argument('-t', '--temperature', type = float, default = 0.5, help =" Temperature of LLM [0.0, 1.0]")
     parser.add_argument('--top_p', type = float, default = 0.8, help ="Focus level on the nucleus of the prompt [0.0, 1.0]")
