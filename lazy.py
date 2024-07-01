@@ -3,7 +3,7 @@ from src.utils.ezr import *
 from src.models import load_model
 from dotenv import load_dotenv
 from src.prompts import load_prompt
-from src.utils.results import save_results_txt
+from src.utils.results import save_results_txt, visualize
 import warnings
 import time
 
@@ -72,7 +72,7 @@ def vanilla1(args):
         sd=int(num.sd*n/2)
         mu=int(num.mu*n)
         print(" "*(mu-sd), "-"*sd,"+"*sd,sep="")
-        record = o(the = "result", N = len(lst), Mu = format(num.mu,".2f"), Sd = format(num.sd, ".2f"), Var = " "*(mu-sd) + "-"*sd + "+"*sd, Curd2h = curd2h, Budget = budget)
+        record = o(the = "result", N = len(lst), Mu = format(num.mu,".3f"), Sd = format(num.sd, ".3f"), Var = " "*(mu-sd) + "-"*sd + "+"*sd, Curd2h = format(curd2h, ".3f"), Budget = budget)
         records.append(record)
 
     def learner(i:data, callBack=lambda x:x):
@@ -82,7 +82,7 @@ def vanilla1(args):
         def _ranked(lst:rows, cur:row = None, budget:int = 0) -> rows:
             "Sort `lst` by distance to heaven. Called by `_smo1()`."
             lst = sorted(lst, key = lambda r:d2h(i,r))
-            _tile([d2h(i,r) for r in lst], None if cur == None else d2h(i,cur), budget)
+            _tile([d2h(i,r) for r in lst], 0 if cur == None else d2h(i,cur), budget)
             # print(d2h of the best row)
             return lst
 
@@ -120,10 +120,68 @@ def vanilla1(args):
     learner(DATA(csv(args.dataset)), _tile)
     return save_results_txt(model = args.model + "_" + args.llm, dataset = args.dataset, records =  records)
 
+def SMO(args):
+    random.seed(args.seed)
+    records = []
+
+    def _tile(lst, curd2h, budget):
+        num = adds(NUM(),lst)
+        n=100
+        print(f"{len(lst):5} : {num.mu:5.3} ({num.sd:5.3})",end="")
+        sd=int(num.sd*n/2)
+        mu=int(num.mu*n)
+        print(" "*(mu-sd), "-"*sd,"+"*sd,sep="")
+        record = o(the = "result", N = len(lst), Mu = format(num.mu,".3f"), Sd = format(num.sd, ".3f"), Var = " "*(mu-sd) + "-"*sd + "+"*sd, Curd2h = format(curd2h, ".3f"), Budget = budget)
+        records.append(record)
+
+    def smo(i:data, score=lambda B,R: B-R, callBack=lambda x,y,z:x ):
+        "Sequential model optimization."
+        def _ranked(lst:rows, cur:row = None, budget:int = 0) -> rows:
+            "Sort `lst` by distance to heaven. Called by `_smo1()`."
+            lst = sorted(lst, key = lambda r:d2h(i,r))
+            callBack([d2h(i,r) for r in lst], 0 if cur == None else d2h(i,cur), budget)
+            return lst
+
+        def _guess(todo:rows, done:rows) -> rows:
+            "Divide `done` into `best`,`rest`. Use those to guess the order of unlabelled rows. Called by `_smo1()`."
+            cut  = int(.5 + len(done) ** 0.5)
+            best = clone(i, done[:cut])
+            rest = clone(i, done[cut:])
+            key  = lambda r: score(loglikes(best, r, len(done), 2),
+                           loglikes(rest, r, len(done), 2))
+            
+            random.shuffle(todo) # optimization: only sort a random subset of todo 
+            todo= sorted(todo[:100], key=key, reverse=True) + todo[100:]
+            return  todo[:int(len(todo) *1)]
+             #return sorted(todo,key=key,reverse=True)
+
+        def _smo1(todo:rows, done:rows) -> rows:
+            "Guess the `top`  unlabeled row, add that to `done`, resort `done`,and repeat"
+            count = 0
+            for k in range(the.Last - the.label):
+                count += 1 
+                if len(todo) < 3: break
+                top,*todo = _guess(todo, done)
+                done += [top]
+                done = _ranked(done, top, count)
+            return done
+
+        random.shuffle(i.rows) # remove any  bias from older runs
+        return _smo1(i.rows[4:], _ranked(i.rows[:4]))
+
+    smo(DATA(csv(args.dataset)),callBack = _tile)
+    save_results_txt(model = args.model, dataset = args.dataset, records =  records)
+    visualize(dataset = args.dataset.rfind('/'), show = 'Grid', save_fig= True)
+    return True
+
+        
 if __name__ == "__main__":
     load_dotenv()
     args = parse_arguments()
-    vanilla1(args)
+    if(args.model == 'vanilla'):
+        vanilla1(args)
+    if(args.model == 'smo'):
+        SMO(args)
     #print(save_results())
 
 

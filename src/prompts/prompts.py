@@ -79,6 +79,28 @@ class Auto93Template(Template):
 
         return messages
 
+
+class HpoEasyTemplate(Template):
+    """
+
+    """
+    def __init__(self, prefix : str = None, suffix : str = None):
+        super().__init__(prefix, suffix)
+        self.prefix = prefix
+        self.suffix = suffix
+
+
+    def getTemplate(self, best : rows =  None, rest : rows =  None, current : row = None):
+
+        messages = [
+        {"role": "system", "content": " You are an Machine Learning Expert, your task is to evaluate the configurations of a model and answer in one word if the configuration falls into best or rest categories. Here are the attributes provided for each configuration in the same order: N Estimators, criterion, Minimum Sample Leaves, Minimum Impurity Decrease, Max Depth"},
+        {"role": "user", "content": f"""These are the examples for best configurations: {best}, These are the examples of rest configurations: {rest}"""},
+        {"role": "user", "content": f""" Based on the above examples, answer in one word if the following configuration is similar to best or rest {current}"""}
+        ]
+
+        return messages
+
+
         
 
 
