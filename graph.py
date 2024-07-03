@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 
-def visualize(path = './output/', folder = 'single_run/' , dataset = 'auto93', show = 'Grid' , save_fig = False, display = False):
+def visualize(path = './output/', folder = 'single_run/' , dataset = 'auto93', show = 'All' , save_fig = False, display = False):
     data_list = []
 
     # Read each .txt file in the folder
@@ -26,7 +26,7 @@ def visualize(path = './output/', folder = 'single_run/' , dataset = 'auto93', s
 
     os.makedirs(path + 'img/', exist_ok=True)
 
-    if(show == 'Grid'):
+    if(show == 'All'):
         fig, axs = plt.subplots(4, 1, figsize=(10, 15), sharex=True)
 
         # Plot each attribute in a separate subplot
@@ -49,14 +49,16 @@ def visualize(path = './output/', folder = 'single_run/' , dataset = 'auto93', s
         if(save_fig):
             plt.savefig(path + 'img/' + dataset)
         if(display):
-            im = np.asarray(Image.open(f"{path}img/{dataset}.png"))
+            plt.savefig(path + 'img/' + dataset +'_temp')
+            im = np.asarray(Image.open(f"{path}img/{dataset}_temp.png"))
             imgcat(im, height = 70)
+            os.remove(f"{path}img/{dataset}_temp.png")
             
 
 
 
     else:
-        fig, axs = plt.subplots(1, figsize=(10, 15), sharex=True)
+        fig, axs = plt.subplots(1, figsize=(10, 6), sharex=True)
         for filename, data in data_list:
                 axs.plot(data[headers[0].strip()], data[show], label=filename)  # First column as x-axis
                 axs.set_title(show)
@@ -69,8 +71,11 @@ def visualize(path = './output/', folder = 'single_run/' , dataset = 'auto93', s
         if(save_fig):
             plt.savefig(path + 'img/' + dataset)
         if(display):
+            plt.savefig(path + 'img/' + dataset +'_temp')
+            im = np.asarray(Image.open(f"{path}img/{dataset}_temp.png"))
             im = np.asarray(Image.open(f"{path}img/{dataset}.png"))
             imgcat(im,height= 5, width = 70)
+            os.remove(f"{path}img/{dataset}_temp.png")
 
 
 
@@ -79,4 +84,4 @@ def visualize(path = './output/', folder = 'single_run/' , dataset = 'auto93', s
 
 if __name__ == '__main__':
     #visualize()
-    visualize(dataset = sys.argv[1], show = sys.argv[2], save_fig=True, display = True)
+    visualize(dataset = sys.argv[1], show = sys.argv[2], save_fig=False, display = True)
