@@ -15,8 +15,8 @@ def visualize(path = './output/', folder = 'single_run/' , dataset = 'auto93', s
         if filename.endswith('.txt'): 
             file_path = os.path.join(path + folder + dataset, filename)
             with open(file_path, 'r') as file:
-                reader = csv.reader(file, delimiter=',')  # Assuming tab-delimited files
-                headers = next(reader)  # Read the headers
+                reader = csv.reader(file, delimiter=',')  # Assuming ',' delimited files
+                headers = next(reader)  
                 data = {header.strip(): [] for header in headers if header.strip() != 'Var'}
                 for row in reader:
                     for header, value in zip(headers, row):
@@ -30,18 +30,18 @@ def visualize(path = './output/', folder = 'single_run/' , dataset = 'auto93', s
         fig, axs = plt.subplots(4, 1, figsize=(10, 15), sharex=True)
 
         # Plot each attribute in a separate subplot
-        attributes = headers[1:]  # Assuming the first column is used as x-axis
+        attributes = headers[1:]  
         attributes.remove('  Var')
 
         for i, attribute in enumerate(attributes):
             for filename, data in data_list:
-                axs[i].plot(data[headers[0].strip()], data[attribute.strip()], label=filename)  # First column as x-axis
+                axs[i].plot(data[headers[0].strip()], data[attribute.strip()], label=filename) 
                 axs[i].set_title(attribute.strip())
                 axs[i].legend()
 
  
         for ax in axs:
-            ax.set_xlabel(headers[0].strip())  # Set the x-axis label from the header
+            ax.set_xlabel(headers[0].strip()) 
             ax.set_ylabel('Value')
 
         plt.tight_layout()
@@ -60,7 +60,7 @@ def visualize(path = './output/', folder = 'single_run/' , dataset = 'auto93', s
     else:
         fig, axs = plt.subplots(1, figsize=(10, 6), sharex=True)
         for filename, data in data_list:
-                axs.plot(data[headers[0].strip()], data[show], label=filename)  # First column as x-axis
+                axs.plot(data[headers[0].strip()], data[show], label=filename)
                 axs.set_title(show)
                 axs.legend()
 
@@ -82,5 +82,10 @@ def visualize(path = './output/', folder = 'single_run/' , dataset = 'auto93', s
     
 
 if __name__ == '__main__':
-    #visualize()
-    visualize(dataset = sys.argv[1], show = sys.argv[2], save_fig=False, display = True)
+  # Command Line Visualizations for a quick sneek peak at the outputs
+    if(len(sys.argv) ==3):
+        visualize(dataset = sys.argv[1], show = sys.argv[2], save_fig=False, display = True)
+    elif(len(sys.argv) == 2):
+        visualize(dataset = sys.argv[1], save_fig=False, display = True)
+    else:
+        visualize(save_fig=False, display = True)
