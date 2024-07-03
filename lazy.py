@@ -3,7 +3,8 @@ from src.utils.ezr import *
 from src.models import load_model
 from dotenv import load_dotenv
 from src.prompts import load_prompt
-from src.utils.results import save_results_txt, visualize
+from src.utils.results import save_results_txt
+from graph import visualize 
 import warnings
 import time
 
@@ -119,6 +120,7 @@ def vanilla1(args):
 
     learner(DATA(csv(args.dataset)), _tile)
     return save_results_txt(model = args.model + "_" + args.llm, dataset = args.dataset, records =  records)
+    visualize(dataset = args.dataset.rfind('/'), show = 'Grid', save_fig= True)
 
 def SMO(args):
     random.seed(args.seed)

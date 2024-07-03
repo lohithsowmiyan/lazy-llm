@@ -11,3 +11,5 @@ sentencepiece
 langchain-google-genai
 langchain-openai
 python-dotenv
+imgcat
+pillow
