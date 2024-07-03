@@ -13,7 +13,7 @@ git clone https://github.com/lohithsowmiyan/lazy-llm.git
 cd lazy-llm
 
 #Install necessary modules
-pip install -r requirements.txt
+pip install -r requirements.txt --no-warn-script-location
 
 #create a .env file and add all the necessary tokens
 touch .env
