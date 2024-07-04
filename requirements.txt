@@ -13,4 +13,4 @@ langchain-openai
 python-dotenv
 imgcat
 pillow
-eniops
+einops
