@@ -9,7 +9,7 @@ local_model_path = {
     "llama3-8b" : "meta-llama/Meta-Llama-3-8B-Instruct",
     "mistral" : "filipealmeida/Mistral-7B-Instruct-v0.1-sharded",
     "phi3-mini" : "microsoft/Phi-3-mini-4k-instruct",
-    "phi3-small" : "microsoft/Phi-3-small-4k-instruct",
+    "phi3-small" : "microsoft/Phi-3-small-8k-instruct",
     "phi3-medium" : "microsoft/Phi-3-medium-4k-instruct",
 
 }
