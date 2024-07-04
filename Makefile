@@ -1,5 +1,5 @@
 SHELL := bash
-OUTPUT_DIR = 'output/'
+OUTPUT_DIR := 'output/'
 GIT_COMMIT_MSG := "Update experiment results"
 GIT_BRANCH := main
 PYTHON_SCRIPT := lazy.py
