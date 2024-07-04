@@ -11,6 +11,7 @@ local_model_path = {
     "phi3-mini" : "microsoft/Phi-3-mini-4k-instruct",
     "phi3-small" : "microsoft/Phi-3-small-8k-instruct",
     "phi3-medium" : "microsoft/Phi-3-medium-4k-instruct",
+    "mistral-7b" : "mistralai/Mistral-7B-Instruct-v0.3"
 
 }
 

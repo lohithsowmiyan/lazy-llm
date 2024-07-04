@@ -1,9 +1,9 @@
 SHELL := /bin/bash
-OUTPUT_DIR := output/
+OUTPUT_DIR := output
 GIT_COMMIT_MSG := "Update experiment results"
 GIT_BRANCH := main
 PYTHON_SCRIPT := lazy.py
-LLM := phi3-small
+LLM := mistral-7b
 DATASET1 := data/hpo/healthCloseIsses12mths0001-hard.csv
 DATASET2 := data/hpo/healthCloseIsses12mths0011-easy.csv
 
