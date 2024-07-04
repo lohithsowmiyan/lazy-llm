@@ -3,7 +3,7 @@ OUTPUT_DIR := output/
 GIT_COMMIT_MSG := "Update experiment results"
 GIT_BRANCH := main
 PYTHON_SCRIPT := lazy.py
-LLM := phi3-medium
+LLM := phi3-small
 DATASET1 := data/hpo/healthCloseIsses12mths0001-hard.csv
 DATASET2 := data/hpo/healthCloseIsses12mths0011-easy.csv
 
@@ -17,8 +17,10 @@ push:
 	git commit -m "$(GIT_COMMIT_MSG)"
 	git push origin $(GIT_BRANCH)
 
-run:
+run1:
 	python3 $(PYTHON_SCRIPT) --llm $(LLM) --dataset $(DATASET1)
+	
+run2:
 	python3 $(PYTHON_SCRIPT) --llm $(LLM) --dataset $(DATASET2)
 
-phi3: run push
+phi3: run1 push run2 push
