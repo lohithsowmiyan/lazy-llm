@@ -15,11 +15,8 @@ push: ## Push the results to GitHub
     git commit -m "$(GIT_COMMIT_MSG)"
     git push
 
-run1:
+run:
     python3 $(PYTHON_SCRIPT) --llm $(LLM) --dataset $(DATASET1)
+    python3 $(PYTHON_SCRIPT) --llm $(LLM) --dataset $(DATASET2)
 
-run2:
-	python3 $(PYTHON_SCRIPT) --llm $(LLM) --dataset $(DATASET2)
-    
-
-phi3: run1 push run2 push
+phi3: run push
