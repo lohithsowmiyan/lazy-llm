@@ -173,7 +173,7 @@ def SMO(args):
 
     smo(DATA(csv(args.dataset)),callBack = _tile)
     save_results_txt(model = args.model, dataset = args.dataset, records =  records)
-    visualize(dataset = args.dataset.rfind('/'), save_fig= True)
+    visualize(dataset = args.dataset.rfind('/'), show = 'All', save_fig= True)
     return True
 
         

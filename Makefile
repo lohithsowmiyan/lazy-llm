@@ -15,7 +15,7 @@ help:
 
 push: 
 	git add $(OUTPUT_DIR)
-	git commit -m "$(GIT_COMMIT_MSG)"
+	git commit -m $(GIT_COMMIT_MSG)
 	git push
 
 run1:
@@ -27,4 +27,4 @@ run2:
 run3:
 	python3 $(PYTHON_SCRIPT) --llm $(LLM) --dataset $(DATASET3)
 
-run: run1 push run2 push run3 push
+run: run3 push
