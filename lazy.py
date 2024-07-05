@@ -119,9 +119,8 @@ def vanilla1(args):
         return _smo1(i.rows[4:], _ranked(i.rows[:4]))
 
     learner(DATA(csv(args.dataset)), _tile)
-    return save_results_txt(model = args.model + "_" + args.llm, dataset = args.dataset, records =  records)
-    time.sleep(3)
-    visualize(dataset = args.dataset.rfind('/'), show = 'All', save_fig= True, display = False)
+    save_results_txt(model = args.model + "_" + args.llm, dataset = args.dataset, records =  records)
+    visualize(dataset = args.dataset[args.dataset.rfind('/')+1:], show = 'All', save_fig= True, display = False)
 
 def SMO(args):
     random.seed(args.seed)
@@ -174,8 +173,7 @@ def SMO(args):
 
     smo(DATA(csv(args.dataset)),callBack = _tile)
     save_results_txt(model = args.model, dataset = args.dataset, records =  records)
-    time.sleep(3)
-    visualize(dataset = args.dataset.rfind('/'), show = 'All', save_fig= True, display = False)
+    visualize(dataset = args.dataset[args.dataset.rfind('/')+1:], show = 'All', save_fig= True, display = False)
     return True
 
         
