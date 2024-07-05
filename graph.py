@@ -73,7 +73,7 @@ def visualize(path = './output/', folder = 'single_run/' , dataset = 'auto93', s
         if(display):
             plt.savefig(path + 'img/' + dataset +'_temp')
             im = np.asarray(Image.open(f"{path}img/{dataset}_temp.png"))
-            imgcat(im,height= 5, width = 70)
+            imgcat(im,height= 10, width = 90)
             os.remove(f"{path}img/{dataset}_temp.png")
 
 
