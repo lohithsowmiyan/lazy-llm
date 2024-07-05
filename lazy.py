@@ -120,7 +120,7 @@ def vanilla1(args):
 
     learner(DATA(csv(args.dataset)), _tile)
     return save_results_txt(model = args.model + "_" + args.llm, dataset = args.dataset, records =  records)
-    visualize(dataset = args.dataset.rfind('/'), show = 'Grid', save_fig= True)
+    visualize(dataset = args.dataset.rfind('/'), show = 'All', save_fig= True)
 
 def SMO(args):
     random.seed(args.seed)
