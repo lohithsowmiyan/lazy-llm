@@ -68,7 +68,14 @@ python lazy.py --model vanilla --llm gpt-3.5-turbo --dataset data/misc/wine_qual
 | `q_bits`      | `4` or  `8` | Lower value results in low operating cost |
 
 
+## Visualization/Examples
 
+```bash
+#Example 1
+python3 graph.py auto93.csv All
+#Example 2
+python3 graph.py healthCloseIsses12mths0011-easy Mu
+```
 
 
 ## Acknowledgements
