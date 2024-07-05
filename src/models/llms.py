@@ -65,7 +65,7 @@ class Local_LLM(LLM):
         pipe = pipeline(
          "text-generation",
          model=self.model_name,
-         device_map = "auto",
+         #device_map = "auto",
         )
 
         return pipe

@@ -13,6 +13,16 @@ class Template():
         return f'Template(prefix = {self.prefix}, suffix = {self.suffix})'
 
     #def _createPairs():
+    def getTemplate(self, best : rows =  None, rest : rows =  None, current : row = None, cols = None):
+        attr = ",".join([col.txt for col in cols])
+        messages = [
+        {"role": "system", "content": f"You are an excellent assistant, you need to evaluate the specifications of a configuration and answer in one word if the example falls into best or rest categories. Here are the attributes provided for each configuration in the same order: {attr}"},
+        {"role": "user", "content": f"""These are the examples for best configuration: {best}, These are the examples of rest configuration: {rest}"""},
+        {"role": "user", "content": f""" Based on the above examples attributes, answer in one word if the following example is similar to best or rest {current}"""}
+        ]
+
+        return messages
+
     
 class Auto93Template(Template):
     """
@@ -69,7 +79,7 @@ class Auto93Template(Template):
     #         -------------------------------------
     #     """
 
-    def getTemplate(self, best : rows =  None, rest : rows =  None, current : row = None):
+    def getTemplate(self, best : rows =  None, rest : rows =  None, current : row = None, **kwargs):
 
         messages = [
         {"role": "system", "content": " You are an excellent car sales consultant, you need to evaluate the specifications of a car and answer in one word if the car falls into best or rest categories. Here are the attributes provided for each car in the same order: Number of Cylinders, Volume, Horsepower, Model, Origin"},
@@ -90,7 +100,7 @@ class HpoEasyTemplate(Template):
         self.suffix = suffix
 
 
-    def getTemplate(self, best : rows =  None, rest : rows =  None, current : row = None):
+    def getTemplate(self, best : rows =  None, rest : rows =  None, current : row = None, **kwargs):
 
         messages = [
         {"role": "system", "content": " You are an Machine Learning Expert, your task is to evaluate the configurations of a model and answer in one word if the configuration falls into best or rest categories. Here are the attributes provided for each configuration in the same order: N Estimators, criterion, Minimum Sample Leaves, Minimum Impurity Decrease, Max Depth"},

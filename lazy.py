@@ -93,7 +93,7 @@ def vanilla1(args):
             rest = clone(i, done[cut:]).rows
             best = [b[:len(i.cols.x)] for b in best]
             rest = [r[:len(i.cols.x)] for r in rest]
-            messages = load_prompt[args.dataset].getTemplate(best, rest, current[:len(i.cols.x)])
+            messages = load_prompt(args.dataset).getTemplate(best, rest, current[:len(i.cols.x)], cols = i.cols.x)
             prompt = model.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
             model.model.config.pad_token_id = model.model.config.eos_token_id
             outputs = model(prompt, max_new_tokens=256,  do_sample=True, temperature=0.5, top_p=0.9) #eos_token_id=terminators,
@@ -120,7 +120,8 @@ def vanilla1(args):
 
     learner(DATA(csv(args.dataset)), _tile)
     return save_results_txt(model = args.model + "_" + args.llm, dataset = args.dataset, records =  records)
-    visualize(dataset = args.dataset.rfind('/'), show = 'All', save_fig= True)
+    time.sleep(3)
+    visualize(dataset = args.dataset.rfind('/'), show = 'All', save_fig= True, display = False)
 
 def SMO(args):
     random.seed(args.seed)
@@ -173,7 +174,8 @@ def SMO(args):
 
     smo(DATA(csv(args.dataset)),callBack = _tile)
     save_results_txt(model = args.model, dataset = args.dataset, records =  records)
-    visualize(dataset = args.dataset.rfind('/'), show = 'All', save_fig= True)
+    time.sleep(3)
+    visualize(dataset = args.dataset.rfind('/'), show = 'All', save_fig= True, display = False)
     return True
 
         
