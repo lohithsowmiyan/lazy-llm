@@ -206,6 +206,7 @@ def alls(args):
             rxs[rx] = SOME(txt= rx)
             for _ in range(rep):
                 args.llm = llm
+                args.last = last
                 rxs[rx].add(d2h(d, vanilla1(args, False, k)[0]))
 
     rxs[rx].add(d2h(d,vanilla1(args, False)[0]))
