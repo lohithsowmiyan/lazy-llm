@@ -60,7 +60,7 @@ import time
 
 #     learner(DATA(csv(args.dataset)), _tile)
 
-def vanilla1(args):
+def vanilla1(args, save_results = True):
     warnings.filterwarnings("ignore")
     model =  load_model(args).get_pipeline()
     random.seed(args.seed)
@@ -76,14 +76,14 @@ def vanilla1(args):
         record = o(the = "result", N = len(lst), Mu = format(num.mu,".3f"), Sd = format(num.sd, ".3f"), Var = " "*(mu-sd) + "-"*sd + "+"*sd, Curd2h = format(curd2h, ".3f"), Budget = budget)
         records.append(record)
 
-    def learner(i:data, callBack=lambda x:x):
+    def learner(i:data, callBack=lambda x,y,z:x):
         """
         
         """
         def _ranked(lst:rows, cur:row = None, budget:int = 0) -> rows:
             "Sort `lst` by distance to heaven. Called by `_smo1()`."
             lst = sorted(lst, key = lambda r:d2h(i,r))
-            _tile([d2h(i,r) for r in lst], 0 if cur == None else d2h(i,cur), budget)
+            callBack([d2h(i,r) for r in lst], 0 if cur == None else d2h(i,cur), budget)
             # print(d2h of the best row)
             return lst
 
@@ -107,10 +107,10 @@ def vanilla1(args):
             count = 0
             for k in todo:
                 count += 1
-                if len(done) >= 30: break
+                if len(done) >= args.last: break
                 top = llm_guesser(k, done)
                 if(top == None): continue
-                print(d2h(i,top))
+                btw(d2h(i,top))
                 done += [top]
                 done = _ranked(done, top, count)
             return done
@@ -118,10 +118,13 @@ def vanilla1(args):
         random.shuffle(i.rows)
         return _smo1(i.rows[4:], _ranked(i.rows[:4]))
 
-    learner(DATA(csv(args.dataset)), _tile)
-    save_results_txt(model = args.model + "_" + args.llm, dataset = args.dataset, records =  records)
-    time.sleep(5)
-    visualize(dataset = args.dataset[args.dataset.rfind('/')+1:-4], show = 'All', save_fig= True, display = False)
+    
+    if(save_results):
+        learner(DATA(csv(args.dataset)), _tile)
+        save_results_txt(model = args.model + "_" + args.llm, dataset = args.dataset, records =  records)
+        time.sleep(5)
+        visualize(dataset = args.dataset[args.dataset.rfind('/')+1:-4], show = 'All', save_fig= True, display = False)
+    return learner(DATA(csv(args.dataset)))
 
 def SMO(args):
     random.seed(args.seed)
@@ -178,12 +181,12 @@ def SMO(args):
     visualize(dataset = args.dataset[args.dataset.rfind('/')+1:-4], show = 'All', save_fig= True, display = False)
     return True
 
-  def alls():
+def alls(args):
     "try different sample sizes"
     policies = dict(exploit = lambda B,R: B-R,
                     EXPLORE = lambda B,R: (e**B + e**R)/abs(e**B - e**R + 1E-30))
     repeats=20
-    d = DATA(csv(the.train))
+    d = DATA(csv(args.dataset))
     e = math.exp(1)
     rxs={}
     rxs["baseline"] = SOME(txt=f"baseline,{len(d.rows)}",inits=[d2h(d,row) for row in d.rows])
@@ -192,7 +195,10 @@ def SMO(args):
     for _ in range(repeats):
         best,_,_ = branch(d,d.rows,4); rxs[rx].add(d2h(d,best[0]))
 
-    rx =f"llm_{args.model_name},{args.llm},{args.last}"
+    rx =f"llm_{args.model},{args.llm},{args.last}"
+    rxs[rx] = SOME(txt= rx)
+    # for _ in range(repeats):
+    rxs[rx].add(d2h(d,vanilla1(args, False)[0]))
     for last in [20,25,30,35,40,45,50,55,60]:
       the.Last= last
       guess = lambda : clone(d,random.choices(d.rows, k=last),rank=True).rows[0]
@@ -207,6 +213,7 @@ def SMO(args):
              btw(".")
              rxs[rx].add(d2h(d,smo(d,how)[0]))
           btw("\n")
+      
     report(rxs.values())
 
         
@@ -217,8 +224,9 @@ if __name__ == "__main__":
         vanilla1(args)
     if(args.model == 'smo'):
         SMO(args)
-    
+
     if(args.model == 'alls'):
+        alls(args)
 
     #print(save_results())
 

@@ -511,6 +511,7 @@ def smo(i:data, score=lambda B,R: B-R, callBack=lambda x:x ):
     for k in range(the.Last - the.label):
       if len(todo) < 3: break
       top,*todo = _guess(todo, done)
+      #print(d2h(i,top))
       done += [top]
       done = _ranked(done)
     return done
