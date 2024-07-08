@@ -627,7 +627,7 @@ class SOME:
       n      = sum(pull(yhat).delta(pull(zhat)) > delta0 for _ in range(samples)) 
       return n / samples >= confidence # true if different
 
-#--------- --------- --------- --------- --------- --------- --------- --------- ---------
+#--------- --------- --------- --------- --------- --------- --------- --------- ---------
 # ## Misc Functions:
 
 # SOME general Python tricks
@@ -710,7 +710,7 @@ def bars(somes: list[SOME], width:integer=40) ->  None:
     last=some.rank
     print(all.bar(some.has(), width=width, word="%20s", fmt="%5.2f"))
 
-#--------- --------- --------- --------- --------- --------- --------- --------- ---------
+#--------- --------- --------- --------- --------- --------- --------- --------- ---------
 # ## Main
 
 def main() -> None: 

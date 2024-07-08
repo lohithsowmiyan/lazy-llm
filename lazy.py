@@ -60,7 +60,7 @@ import time
 
 #     learner(DATA(csv(args.dataset)), _tile)
 
-def vanilla1(args, save_results = True):
+def vanilla1(args, save_results = True, k = 1):
     warnings.filterwarnings("ignore")
     model =  load_model(args).get_pipeline()
     random.seed(args.seed)
@@ -115,8 +115,8 @@ def vanilla1(args, save_results = True):
                 done = _ranked(done, top, count)
             return done
 
-        random.shuffle(i.rows)
-        return _smo1(i.rows[4:], _ranked(i.rows[:4]))
+        i_sampled = random.choices(i.rows, k = k * len(i.rows))
+        return _smo1(i_sampled[args.label:], _ranked(i_sampled[:args.label]))
 
     
     if(save_results):
@@ -186,6 +186,7 @@ def alls(args):
     policies = dict(exploit = lambda B,R: B-R,
                     EXPLORE = lambda B,R: (e**B + e**R)/abs(e**B - e**R + 1E-30))
     repeats=20
+    rep = 1
     d = DATA(csv(args.dataset))
     e = math.exp(1)
     rxs={}
@@ -194,10 +195,18 @@ def alls(args):
     rxs[rx] = SOME(txt=rx)
     for _ in range(repeats):
         best,_,_ = branch(d,d.rows,4); rxs[rx].add(d2h(d,best[0]))
+    k = 1
+    if(len(d.rows) <= 500): k = 1
+    elif(len(d.rows) <= 1000): k = 0.7
+    elif(len(d.rows) <= 5000): k = 0.15
+    elif(len(d.rows) <= 10000) : k = 0.08
+    for last in [20, 25, 30]:
+        for llm in ['phi3-mini', 'llama3-8b', 'phi3-medium']:
+            rx =f"llm,{llm},{last}"
+            rxs[rx] = SOME(txt= rx)
+            for _ in range(rep):
+                rxs[rx].add(d2h(d, vanilla1(args, False, k)[0]))
 
-    rx =f"llm_{args.model},{args.llm},{args.last}"
-    rxs[rx] = SOME(txt= rx)
-    # for _ in range(repeats):
     rxs[rx].add(d2h(d,vanilla1(args, False)[0]))
     for last in [20,25,30,35,40,45,50,55,60]:
       the.Last= last

@@ -76,10 +76,12 @@ docs/%.html : %.py ## .py --> .html
 
 
 
-ALLS= $(subst data/hpo,var/out/alls,$(wildcard data/hpo/*.csv))
+#ALLS= $(subst data/hpo,var/out/alls,$(wildcard data/hpo/*.csv))
 
 
-var/out/alls/%.csv : data/hpo/%.csv     ; echo $<; python3 ./lazy.py --dataset $<  --llm phi3-mini --model alls | tee $@
+var/out/alls/auto93.csv : data/misc/auto93.csv
+	mkdir -p $(dir $@)
+	echo $<; python3 ./lazy.py --dataset $< --model alls | tee $@
 
 alls: 
 	mkdir -p var/out/alls
