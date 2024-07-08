@@ -22,6 +22,7 @@ def parse_arguments():
 
     #Other Configurations
     parser.add_argument('-s', '--seed', type = int, default = 1234567891, help ="Random seed [1, 1e9+7]")
+    parser.add_argument('--last', type = int, default = 30, help ="number of labels [20, 25, 30, 35, 40, 45]")
     
     args = parser.parse_args()
 

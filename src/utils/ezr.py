@@ -6,7 +6,6 @@
         
     OPTIONS:    
       -a --any     #todo's to explore             = 100   
-      -b  --beam    print factor for examples     =  1
       -c --cohen   size of the Cohen d            = 0.35
       -d --decs    #decimals for showing floats   = 3    
       -e --enough  want cuts at least this good   = 0.1   
@@ -439,7 +438,7 @@ def half(i:data, region:rows, sortp=False, before=None) -> tuple[rows,rows,row]:
   "Split the `region` in half according to each row's distance to two distant points. Used by `branch()`."
   mid = int(len(region) // 2)
   left,right,C = _twoFaraway(i, region, sortp=sortp, before=before)
-  project = lambda row1: (dists(i,row1,left)**2 + C**2 - dists(i,row1,right)**2)/(2*C)
+  project = lambda row1: (dists(i,row1,left)**2 + C**2 - dists(i,row1,right)**2)/(2*C + 1E-30)
   tmp = sorted(region, key=project)
   return tmp[:mid], tmp[mid:], left, right
 
@@ -501,13 +500,10 @@ def smo(i:data, score=lambda B,R: B-R, callBack=lambda x:x ):
     rest = clone(i, done[cut:])
     key  = lambda r: score(loglikes(best, r, len(done), 2),
                            loglikes(rest, r, len(done), 2))
-    if the.GuessFaster:
-      random.shuffle(todo) # optimization: only sort a random subset of todo 
-      todo= sorted(todo[:the.any], key=key, reverse=True) + todo[the.any:]
-      return  todo[:int(len(todo) *the.beam)]
-    else:
-      return sorted(todo,key=key,reverse=True)
-      
+    
+    random.shuffle(todo) # optimization: only sort a random subset of todo 
+    return  sorted(todo[:the.any], key=key, reverse=True) + todo[the.any:]
+
     #return sorted(todo,key=key,reverse=True)
 
   def _smo1(todo:rows, done:rows) -> rows:
@@ -853,28 +849,31 @@ class eg:
 
   def alls():
     "try different sample sizes"
-    policies = dict(exploit = lambda B,R: B-R)
+    policies = dict(exploit = lambda B,R: B-R,
+                    EXPLORE = lambda B,R: (e**B + e**R)/abs(e**B - e**R + 1E-30))
     repeats=20
     d = DATA(csv(the.train))
     e = math.exp(1)
     rxs={}
     rxs["baseline"] = SOME(txt=f"baseline,{len(d.rows)}",inits=[d2h(d,row) for row in d.rows])
-    for last in [15,20,25,30,35,40]:
+    rx=f"rrp,{int(0.5+math.log(len(d.rows),2)+1)}"
+    rxs[rx] = SOME(txt=rx)
+    for _ in range(repeats):
+        best,_,_ = branch(d,d.rows,4); rxs[rx].add(d2h(d,best[0]))
+    for last in [20,25,30,35,40,45,50,55,60]:
       the.Last= last
-      guess = lambda : clone(d,random.choices(d.rows, k=last+the.label),rank=True).rows[0]
+      guess = lambda : clone(d,random.choices(d.rows, k=last),rank=True).rows[0]
       rx=f"random,{last}"
       rxs[rx] = SOME(txt=rx, inits=[d2h(d,guess()) for _ in range(repeats)])
-      for beam in [1,0.9,0.8,0.7,0.6]:
-        the.beam = beam
-        for  guessFaster in [True]:
-          for what,how in  policies.items():
-            the.GuessFaster = guessFaster
-            rx=f"{what}/{the.GuessFaster}/{beam},{the.Last}"
-            rxs[rx] = SOME(txt=rx)
-            for _ in range(repeats):
-               btw(".")
-               rxs[rx].add(d2h(d,smo(d,how)[0]))
-            btw("\n")
+      for  guessFaster in [True]:
+        for what,how in  policies.items():
+          the.GuessFaster = guessFaster
+          rx=f"{what},{the.Last}"
+          rxs[rx] = SOME(txt=rx)
+          for _ in range(repeats):
+             btw(".")
+             rxs[rx].add(d2h(d,smo(d,how)[0]))
+          btw("\n")
     report(rxs.values())
 
   def smos():
@@ -888,7 +887,7 @@ class eg:
     rxs["baseline"] = SOME(txt=f"baseline,{len(d.rows)}",inits=[d2h(d,row) for row in d.rows])
     for last in [10,20,30,40]:
       the.Last= last
-      guess = lambda : clone(d,random.choices(d.rows, k=last+the.label),rank=True).rows[0]
+      guess = lambda : clone(d,random.choices(d.rows, k=last),rank=True).rows[0]
       rx=f"random,{last}"
       rxs[rx] = SOME(txt=rx, inits=[d2h(d,guess()) for _ in range(repeats)])
       for  guessFaster in [False,True]:
@@ -1051,4 +1050,3 @@ if __name__ == "__main__": main()
 #   Also,  if a function is about some data type, use `i` (not `self` and not `this`)
 #   for first function argument.
 #   And do not use `i` otherwise (e.g. not as a loop counter).
-

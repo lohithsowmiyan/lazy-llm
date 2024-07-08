@@ -178,6 +178,37 @@ def SMO(args):
     visualize(dataset = args.dataset[args.dataset.rfind('/')+1:-4], show = 'All', save_fig= True, display = False)
     return True
 
+  def alls():
+    "try different sample sizes"
+    policies = dict(exploit = lambda B,R: B-R,
+                    EXPLORE = lambda B,R: (e**B + e**R)/abs(e**B - e**R + 1E-30))
+    repeats=20
+    d = DATA(csv(the.train))
+    e = math.exp(1)
+    rxs={}
+    rxs["baseline"] = SOME(txt=f"baseline,{len(d.rows)}",inits=[d2h(d,row) for row in d.rows])
+    rx=f"rrp,{int(0.5+math.log(len(d.rows),2)+1)}"
+    rxs[rx] = SOME(txt=rx)
+    for _ in range(repeats):
+        best,_,_ = branch(d,d.rows,4); rxs[rx].add(d2h(d,best[0]))
+
+    rx =f"llm_{args.model_name},{args.llm},{args.last}"
+    for last in [20,25,30,35,40,45,50,55,60]:
+      the.Last= last
+      guess = lambda : clone(d,random.choices(d.rows, k=last),rank=True).rows[0]
+      rx=f"random,{last}"
+      rxs[rx] = SOME(txt=rx, inits=[d2h(d,guess()) for _ in range(repeats)])
+      for  guessFaster in [True]:
+        for what,how in  policies.items():
+          the.GuessFaster = guessFaster
+          rx=f"{what},{the.Last}"
+          rxs[rx] = SOME(txt=rx)
+          for _ in range(repeats):
+             btw(".")
+             rxs[rx].add(d2h(d,smo(d,how)[0]))
+          btw("\n")
+    report(rxs.values())
+
         
 if __name__ == "__main__":
     load_dotenv()
@@ -186,6 +217,9 @@ if __name__ == "__main__":
         vanilla1(args)
     if(args.model == 'smo'):
         SMO(args)
+    
+    if(args.model == 'alls'):
+
     #print(save_results())
 
 
