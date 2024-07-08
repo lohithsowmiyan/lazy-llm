@@ -21,6 +21,8 @@ MAKEFLAGS += --warn-undefined-variables
 .SILENT:  
 
 Root=$(shell git rev-parse --show-toplevel)
+OUTPUT_FILE := var
+GIT_MESSAGE := saving the output
 
 help      :  ## show help
 	awk 'BEGIN {FS = ":.*?## "; print "\nmake [WHAT]" } \
@@ -32,7 +34,9 @@ pull    : ## download
 	git pull
 
 push    : ## save
-	echo -n "> Say, why are you saving? "; read x; git commit -am "$$x"; git push; git status
+	git add $(OUTPUT_FILE)
+	git commit -m "$(GIT_MESSAGE)"
+	git push
 
 name:
 	read -p "word> " w; figlet -f mini -W $$w  | gawk '$$0 {print "#        "$$0}' |pbcopy
@@ -82,6 +86,7 @@ docs/%.html : %.py ## .py --> .html
 var/out/alls/auto93.csv : data/misc/auto93.csv
 	mkdir -p $(dir $@)
 	echo $<; python3 ./lazy.py --dataset $< --model alls | tee $@
+	push
 
 alls: 
 	mkdir -p var/out/alls

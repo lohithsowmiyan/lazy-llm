@@ -63,7 +63,7 @@ import time
 def vanilla1(args, save_results = True, k = 1):
     warnings.filterwarnings("ignore")
     model =  load_model(args).get_pipeline()
-    random.seed(args.seed)
+    #random.seed(args.seed)
     records = []
 
     def _tile(lst, curd2h, budget):
@@ -200,11 +200,12 @@ def alls(args):
     elif(len(d.rows) <= 1000): k = 0.7
     elif(len(d.rows) <= 5000): k = 0.15
     elif(len(d.rows) <= 10000) : k = 0.08
-    for last in [20, 25, 30]:
+    for last in [20]:
         for llm in ['phi3-mini', 'llama3-8b', 'phi3-medium']:
             rx =f"llm,{llm},{last}"
             rxs[rx] = SOME(txt= rx)
             for _ in range(rep):
+                args.llm = llm
                 rxs[rx].add(d2h(d, vanilla1(args, False, k)[0]))
 
     rxs[rx].add(d2h(d,vanilla1(args, False)[0]))
