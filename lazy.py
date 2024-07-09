@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from src.prompts import load_prompt
 from src.utils.results import save_results_txt
 from graph import visualize 
+from src.models.llms import unload_model
 import warnings
 import time
 
@@ -60,9 +61,9 @@ import time
 
 #     learner(DATA(csv(args.dataset)), _tile)
 
-def vanilla1(args, save_results = True, k = 1):
+def vanilla1(args, save_results = False, k = 1):
     warnings.filterwarnings("ignore")
-    model =  load_model(args).get_pipeline()
+    (model, dir) =  load_model(args).get_pipeline()
     #random.seed(args.seed)
     records = []
 
@@ -120,11 +121,13 @@ def vanilla1(args, save_results = True, k = 1):
 
     
     if(save_results):
-        learner(DATA(csv(args.dataset)), _tile)
+        results = learner(DATA(csv(args.dataset)), _tile)
         save_results_txt(model = args.model + "_" + args.llm, dataset = args.dataset, records =  records)
         time.sleep(5)
         visualize(dataset = args.dataset[args.dataset.rfind('/')+1:-4], show = 'All', save_fig= True, display = False)
-    return learner(DATA(csv(args.dataset)))
+    else: results = learner(DATA(csv(args.dataset)))
+    unload_model(model, dir)
+    return results
 
 def SMO(args):
     random.seed(args.seed)
@@ -186,7 +189,7 @@ def alls(args):
     policies = dict(exploit = lambda B,R: B-R,
                     EXPLORE = lambda B,R: (e**B + e**R)/abs(e**B - e**R + 1E-30))
     repeats=20
-    rep = 1
+    rep = 5
     d = DATA(csv(args.dataset))
     e = math.exp(1)
     rxs={}
@@ -200,16 +203,21 @@ def alls(args):
     elif(len(d.rows) <= 1000): k = 0.7
     elif(len(d.rows) <= 5000): k = 0.15
     elif(len(d.rows) <= 10000) : k = 0.08
-    for last in [20]:
-        for llm in ['phi3-mini', 'llama3-8b', 'phi3-medium']:
+    for last in [20, 25, 30]:
+        for llm in ['phi3-mini', 'llama3-8b']:
             rx =f"llm,{llm},{last}"
             rxs[rx] = SOME(txt= rx)
             for _ in range(rep):
                 args.llm = llm
                 args.last = last
                 rxs[rx].add(d2h(d, vanilla1(args, False, k)[0]))
+    
+    rx =f"llm,phi3-medium,15"
+    args.llm = 'phi3-medium'
+    args.last = 15
+    rxs[rx].add(d2h(d, vanilla1(args, False, k)[0]))
 
-    rxs[rx].add(d2h(d,vanilla1(args, False)[0]))
+    
     for last in [20,25,30,35,40,45,50,55,60]:
       the.Last= last
       guess = lambda : clone(d,random.choices(d.rows, k=last),rank=True).rows[0]
@@ -232,7 +240,7 @@ if __name__ == "__main__":
     load_dotenv()
     args = parse_arguments()
     if(args.model == 'vanilla'):
-        vanilla1(args)
+        vanilla1(args, False)
     if(args.model == 'smo'):
         SMO(args)
 

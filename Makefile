@@ -81,12 +81,17 @@ docs/%.html : %.py ## .py --> .html
 
 
 #ALLS= $(subst data/hpo,var/out/alls,$(wildcard data/hpo/*.csv))
-
+push    : ## save
+	git add $(OUTPUT_FILE)
+	git commit -m "$(GIT_MESSAGE)"
+	git push
 
 var/out/alls/auto93.csv : data/misc/auto93.csv
 	mkdir -p $(dir $@)
 	echo $<; python3 ./lazy.py --dataset $< --model alls | tee $@
-	push
+	git add $(OUTPUT_FILE)
+	git commit -m "$(GIT_MESSAGE)"
+	git push
 
 alls: 
 	mkdir -p var/out/alls

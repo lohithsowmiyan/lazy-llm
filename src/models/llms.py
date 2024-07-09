@@ -1,6 +1,9 @@
 import os
 import torch
+import gc
 import getpass
+import shutil
+import tempfile
 from langchain_huggingface.llms import HuggingFacePipeline
 from langchain_openai import OpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -62,13 +65,16 @@ class Local_LLM(LLM):
         return HuggingFacePipeline(pipeline = pipe)
 
     def get_pipeline(self):
+        temp_dir = tempfile.mkdtemp()
+        self.model = AutoModelForCausalLM.from_pretrained(self.model_name, cache_dir = temp_dir)
         pipe = pipeline(
          "text-generation",
-         model=self.model_name,
+         model=self.model,
+         tokenizer = self.tokenizer
          #device_map = "auto",
         )
 
-        return pipe
+        return pipe, temp_dir
 
     def get_model_with_quantization(self) -> HuggingFacePipeline:
         if not self.quantization:
@@ -114,6 +120,12 @@ class API_LLM(LLM):
                         max_tokens= self.max_tokens, 
                         top_p= self.top_p
                 )
+
+def unload_model(model, temp_dir):
+    del model
+    gc.collect()
+
+    shutil.rmtree(temp_dir)
 
 
         
