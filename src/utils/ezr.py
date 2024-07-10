@@ -41,6 +41,7 @@ import re,ast,sys,math,random,traceback
 from fileinput import FileInput as file_or_stdin
 from typing import Any as any
 from typing import Callable 
+import time
 
 R= random.random
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
@@ -529,6 +530,9 @@ class SOME:
       i.txt,i.max=txt,max
       i.lo, i.hi = 1E30, -1E30
       i.rank,i.n,i._has,i.ok = 0,0,[],True
+      i.start = time.time()
+      i.end = time.time()
+
       i.adds(inits)  
 
     def __repr__(i) -> str: 
@@ -543,7 +547,10 @@ class SOME:
         elif isinstance(b,SOME):         [i.add(c) for c in b._has]
         else: i.add(b) 
 
-    def add(i,x:number) -> None:  
+      
+
+    def add(i,x:number) -> None:
+      i.end = time.time()  
       i.n += 1
       i.lo = min(x,i.lo)
       i.hi = max(x,i.hi)
@@ -560,6 +567,16 @@ class SOME:
       if not i.ok: i._has.sort()
       i.ok=True
       return i._has
+
+    def dur(i):
+      "Returns the duration of the current experiment"
+      duration = i.end - i.start
+      if duration < 60:
+        return f"{duration:.2f} seconds"
+      elif duration < 3600:
+        return f"{duration / 60:.2f} minutes"
+      else:
+        return f"{duration / 3600:.2f} hours"
 
     def mid(i) -> number:
       "Return the middle of the distribution."
@@ -594,7 +611,7 @@ class SOME:
       out[width//2] = "|"
       out[nc] = "*" 
       return ', '.join(["%2d" % some.rank, word % some.txt, fmt%c, fmt%(d-b),
-                        ''.join(out),fmt%has[0],fmt%has[-1]])
+                        ''.join(out),fmt%has[0],fmt%has[-1], some.dur()])
 
     def delta(i,j:SOME) -> float:
       "Report distance between two SOMEs, modulated in terms of the standard deviation."
