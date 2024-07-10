@@ -572,9 +572,9 @@ class SOME:
       "Returns the duration of the current experiment"
       duration = i.end - i.start
       if duration < 60:
-        return f"{duration:.2f} seconds"
+        return f"{duration:.2f} secs"
       elif duration < 3600:
-        return f"{duration / 60:.2f} minutes"
+        return f"{duration / 60:.2f} mins"
       else:
         return f"{duration / 3600:.2f} hours"
 
