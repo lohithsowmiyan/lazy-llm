@@ -61,9 +61,12 @@ import time
 
 #     learner(DATA(csv(args.dataset)), _tile)
 
-def vanilla1(args, save_results = False, k = 1):
+def vanilla1(args, save_results = False, k = 1, model = None):
     warnings.filterwarnings("ignore")
-    (model, dir) =  load_model(args).get_pipeline()
+    loaded_here = False
+    if model == None:
+        loaded_here = True
+        (model, dir) =  load_model(args).get_pipeline()
     #random.seed(args.seed)
     records = []
 
@@ -116,7 +119,7 @@ def vanilla1(args, save_results = False, k = 1):
                 done = _ranked(done, top, count)
             return done
 
-        i_sampled = random.choices(i.rows, k = k * len(i.rows))
+        i_sampled = random.choices(i.rows, k = k)
         return _smo1(i_sampled[args.label:], _ranked(i_sampled[:args.label]))
 
     
@@ -126,7 +129,8 @@ def vanilla1(args, save_results = False, k = 1):
         time.sleep(5)
         visualize(dataset = args.dataset[args.dataset.rfind('/')+1:-4], show = 'All', save_fig= True, display = False)
     else: results = learner(DATA(csv(args.dataset)))
-    unload_model(model, dir)
+    if loaded_here:
+        unload_model(model, dir)
     return results
 
 def SMO(args):
@@ -189,7 +193,7 @@ def alls(args):
     policies = dict(exploit = lambda B,R: B-R,
                     EXPLORE = lambda B,R: (e**B + e**R)/abs(e**B - e**R + 1E-30))
     repeats=20
-    rep = 5
+    rep = 1
     d = DATA(csv(args.dataset))
     e = math.exp(1)
     rxs={}
@@ -198,25 +202,24 @@ def alls(args):
     rxs[rx] = SOME(txt=rx)
     for _ in range(repeats):
         best,_,_ = branch(d,d.rows,4); rxs[rx].add(d2h(d,best[0]))
-    k = 1
-    if(len(d.rows) <= 500): k = 1
-    elif(len(d.rows) <= 1000): k = 0.7
-    elif(len(d.rows) <= 5000): k = 0.15
-    elif(len(d.rows) <= 10000) : k = 0.08
-    for last in [20, 25, 30]:
-        for llm in ['phi3-mini', 'llama3-8b']:
-            rx =f"llm,{llm},{last}"
+    
+    k = min(800, len(d.rows))
+    for llm in ['phi3-mini']:#:, 'llama3-8b']:
+        args.llm = llm
+        (model, dir) =  load_model(args).get_pipeline()
+        for last in [20]:#, 25, 30]:
+            rx =f"llm,{llm},{last},({load_model(args).get_params(model)})"
             rxs[rx] = SOME(txt= rx)
             for _ in range(rep):
-                args.llm = llm
                 args.last = last
-                rxs[rx].add(d2h(d, vanilla1(args, False, k)[0]))
+                rxs[rx].add(d2h(d, vanilla1(args, False, k, model)[0]))
+            
     
-    rx =f"llm,phi3-medium,15"
-    args.llm = 'phi3-medium'
-    rxs[rx] = SOME(txt= rx)
-    args.last = 15
-    rxs[rx].add(d2h(d, vanilla1(args, False, k)[0]))
+    # rx =f"llm,phi3-medium,15"
+    # args.llm = 'phi3-medium'
+    # rxs[rx] = SOME(txt= rx)
+    # args.last = 15
+    # rxs[rx].add(d2h(d, vanilla1(args, False, k)[0]))
 
     
     for last in [20,25,30,35,40,45,50,55,60]:

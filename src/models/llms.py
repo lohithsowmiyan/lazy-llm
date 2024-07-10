@@ -49,21 +49,6 @@ class Local_LLM(LLM):
                 bnb_8bit_compute_dtype=torch.bfloat16  
             )
 
-    def get_model(self) -> HuggingFacePipeline:
-        self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
-        pipe = pipeline(
-               "text-generation",
-                model= self.model,
-                tokenizer= self.tokenizer,
-                max_new_tokens= self.max_tokens, 
-                temperature= self.temperature, 
-
-                top_p= self.top_p,
-                do_sample = True 
-               )
-
-        return HuggingFacePipeline(pipeline = pipe)
-
     def get_pipeline(self):
         temp_dir = tempfile.mkdtemp()
         self.model = AutoModelForCausalLM.from_pretrained(self.model_name, cache_dir = temp_dir)
@@ -75,6 +60,16 @@ class Local_LLM(LLM):
         )
 
         return pipe, temp_dir
+
+    def get_params(self, pipe) -> str:
+        model = pipe.model
+        total_params = sum(p.numel() for p in model.parameters())
+        if total_params >= 1e9:
+            return f"{total_params / 1e9:.1f}B"
+        elif total_params >= 1e6:
+            return f"{total_params / 1e6:.1f}M"
+        else:
+            return str(total_params)
 
     def get_model_with_quantization(self) -> HuggingFacePipeline:
         if not self.quantization:
