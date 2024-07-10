@@ -214,6 +214,7 @@ def alls(args):
     
     rx =f"llm,phi3-medium,15"
     args.llm = 'phi3-medium'
+    rxs[rx] = SOME(txt= rx)
     args.last = 15
     rxs[rx].add(d2h(d, vanilla1(args, False, k)[0]))
 
