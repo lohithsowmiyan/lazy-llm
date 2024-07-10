@@ -204,15 +204,16 @@ def alls(args):
         best,_,_ = branch(d,d.rows,4); rxs[rx].add(d2h(d,best[0]))
     
     k = min(800, len(d.rows))
-    for llm in ['phi3-mini']:#:, 'llama3-8b']:
+    for llm in ['phi3-mini', 'llama3-8b']:
         args.llm = llm
         (model, dir) =  load_model(args).get_pipeline()
-        for last in [20]:#, 25, 30]:
+        for last in [20, 25, 30]:
             rx =f"llm,{llm},{last},({load_model(args).get_params(model)})"
             rxs[rx] = SOME(txt= rx)
             for _ in range(rep):
                 args.last = last
                 rxs[rx].add(d2h(d, vanilla1(args, False, k, model)[0]))
+        unload_model(model, dir)
             
     
     # rx =f"llm,phi3-medium,15"
