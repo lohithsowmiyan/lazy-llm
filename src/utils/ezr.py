@@ -486,7 +486,7 @@ def _tile(lst):
    mu=int(num.mu*n)
    print(" "*(mu-sd), "-"*sd,"+"*sd,sep="")
 
-def smo(i:data, score=lambda B,R: B-R, callBack=lambda x:x ):
+def smo(i:data, score=lambda B,R,I,N: B-R, callBack=lambda x:x ):
   "Sequential model optimization."
   def _ranked(lst:rows) -> rows:
     "Sort `lst` by distance to heaven. Called by `_smo1()`."
@@ -500,7 +500,7 @@ def smo(i:data, score=lambda B,R: B-R, callBack=lambda x:x ):
     best = clone(i, done[:cut])
     rest = clone(i, done[cut:])
     key  = lambda r: score(loglikes(best, r, len(done), 2),
-                           loglikes(rest, r, len(done), 2))
+                           loglikes(rest, r, len(done), 2), len(done), the.any)
     
     random.shuffle(todo) # optimization: only sort a random subset of todo 
     return  sorted(todo[:the.any], key=key, reverse=True) + todo[the.any:]

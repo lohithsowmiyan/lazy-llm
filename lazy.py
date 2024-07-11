@@ -61,6 +61,24 @@ import time
 
 #     learner(DATA(csv(args.dataset)), _tile)
 
+def explore(B, R):
+    return (B + R) / (abs(B - R) + 1E-30)
+
+def exploit(B, R):
+    return B
+
+def norm(x, shift):
+    min_x = min(x)
+    max_x = max(x)
+    normalized = [(xi - min_x) / (max_x - min_x) + shift for xi in x]
+    return normalized
+
+def m(i, n, shift):
+    exp_value = math.exp(0.25 * i)
+    exp_values = [math.exp(0.25 * j) for j in range(n)]
+    normalized_values = norm(exp_values, shift)
+    return normalized_values[i]
+
 def vanilla1(args, save_results = False, k = 1, model = None):
     warnings.filterwarnings("ignore")
     loaded_here = False
@@ -193,7 +211,6 @@ def alls(args):
     policies = dict(exploit = lambda B,R: B-R,
                     EXPLORE = lambda B,R: (e**B + e**R)/abs(e**B - e**R + 1E-30))
     repeats=20
-    rep = 1
     d = DATA(csv(args.dataset))
     e = math.exp(1)
     rxs={}
@@ -202,18 +219,35 @@ def alls(args):
     rxs[rx] = SOME(txt=rx)
     for _ in range(repeats):
         best,_,_ = branch(d,d.rows,4); rxs[rx].add(d2h(d,best[0]))
+
+    # tests = [
+    #     {"name": "phi3-mini", "last" : [20, 25, 30, 35, 40], "repeats" : 10},
+    #     {"name": "llama3-8b", "last" : [20, 25, 30], "repeats" : 10},
+    #     {"name" : "phi3-medium", "last" : [15], "repeats" : 5}
+    # ]
     
-    k = min(800, len(d.rows))
-    for llm in ['phi3-mini', 'llama3-8b']:
-        args.llm = llm
-        (model, dir) =  load_model(args).get_pipeline()
-        for last in [20, 25, 30]:
-            rx =f"llm,{llm},{last},({load_model(args).get_params(model)})"
-            rxs[rx] = SOME(txt= rx)
-            for _ in range(rep):
-                args.last = last
-                rxs[rx].add(d2h(d, vanilla1(args, False, k, model)[0]))
-        unload_model(model, dir)
+    # k = min(800, len(d.rows))
+    # for test in tests:
+    #     args.llm = test.name
+    #     (model, dir) =  load_model(args).get_pipeline()
+    #     for last in test.last:
+    #         rx =f"llm,{llm},{last},({load_model(args).get_params(model)})"
+    #         rxs[rx] = SOME(txt= rx)
+    #         for _ in range(test.repeats):
+    #             args.last = last
+    #             rxs[rx].add(d2h(d, vanilla1(args, False, k, model)[0]))
+    #     unload_model(model, dir)
+
+    
+
+    
+    scoring_policies = [
+        ('exploit', lambda B, R, I, N: exploit(B, R)),
+        ('explore', lambda B, R, I, N: explore(B, R)),
+        ('b2', lambda B, R, I, N: (B**2) / (R + 1E-30)),
+        ('SimAnneal', lambda B, R, I, N: ((B + 1) ** m(I, N, 1) + (R + 1)) / (abs(B - R) + 1E-30)),
+        ('ExpProgressive', lambda B, R, I, N: m(I, N, 0) * exploit(B,R) + (1 - m(I, N, 0)) * explore(B,R))
+    ]
             
     
     # rx =f"llm,phi3-medium,15"
@@ -229,7 +263,7 @@ def alls(args):
       rx=f"random,{last}"
       rxs[rx] = SOME(txt=rx, inits=[d2h(d,guess()) for _ in range(repeats)])
       for  guessFaster in [True]:
-        for what,how in  policies.items():
+        for what,how in  scoring_policies:
           the.GuessFaster = guessFaster
           rx=f"{what},{the.Last}"
           rxs[rx] = SOME(txt=rx)
