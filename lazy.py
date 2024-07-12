@@ -220,23 +220,23 @@ def alls(args):
     for _ in range(repeats):
         best,_,_ = branch(d,d.rows,4); rxs[rx].add(d2h(d,best[0]))
 
-    # tests = [
-    #     {"name": "phi3-mini", "last" : [20, 25, 30, 35, 40], "repeats" : 10},
-    #     {"name": "llama3-8b", "last" : [20, 25, 30], "repeats" : 10},
-    #     {"name" : "phi3-medium", "last" : [15], "repeats" : 5}
-    # ]
+    tests = [
+        {"name": "phi3-mini", "last" : [20, 25, 30, 35, 40], "repeats" : 10},
+        {"name": "llama3-8b", "last" : [20, 25, 30], "repeats" : 10},
+        {"name" : "phi3-medium", "last" : [15], "repeats" : 5}
+    ]
     
-    # k = min(800, len(d.rows))
-    # for test in tests:
-    #     args.llm = test.name
-    #     (model, dir) =  load_model(args).get_pipeline()
-    #     for last in test.last:
-    #         rx =f"llm,{llm},{last},({load_model(args).get_params(model)})"
-    #         rxs[rx] = SOME(txt= rx)
-    #         for _ in range(test.repeats):
-    #             args.last = last
-    #             rxs[rx].add(d2h(d, vanilla1(args, False, k, model)[0]))
-    #     unload_model(model, dir)
+    k = min(800, len(d.rows))
+    for test in tests:
+        args.llm = test.name
+        (model, dir) =  load_model(args).get_pipeline()
+        for last in test.last:
+            rx =f"llm,{args.llm},{last},({load_model(args).get_params(model)})"
+            rxs[rx] = SOME(txt= rx)
+            for _ in range(test.repeats):
+                args.last = last
+                rxs[rx].add(d2h(d, vanilla1(args, False, k, model)[0]))
+        unload_model(model, dir)
 
     
 
