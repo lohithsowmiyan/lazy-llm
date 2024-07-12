@@ -221,19 +221,19 @@ def alls(args):
         best,_,_ = branch(d,d.rows,4); rxs[rx].add(d2h(d,best[0]))
 
     tests = [
-        {"name": "phi3-mini", "last" : [20, 25, 30, 35, 40], "repeats" : 10},
-        {"name": "llama3-8b", "last" : [20, 25, 30], "repeats" : 10},
-        {"name" : "phi3-medium", "last" : [15], "repeats" : 5}
+        {"name": "phi3-mini", "lasts" : [20, 25, 30, 35, 40], "repeats" : 10},
+        {"name": "llama3-8b", "lasts" : [20, 25, 30], "repeats" : 7},
+        {"name" : "phi3-medium", "lasts" : [15], "repeats" : 3}
     ]
     
     k = min(800, len(d.rows))
     for test in tests:
-        args.llm = test.name
+        args.llm = test["name"]
         (model, dir) =  load_model(args).get_pipeline()
-        for last in test.last:
+        for last in test["lasts"]:
             rx =f"llm,{args.llm},{last},({load_model(args).get_params(model)})"
             rxs[rx] = SOME(txt= rx)
-            for _ in range(test.repeats):
+            for _ in range(test["repeats"]):
                 args.last = last
                 rxs[rx].add(d2h(d, vanilla1(args, False, k, model)[0]))
         unload_model(model, dir)
