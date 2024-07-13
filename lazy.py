@@ -221,8 +221,8 @@ def alls(args):
         best,_,_ = branch(d,d.rows,4); rxs[rx].add(d2h(d,best[0]))
 
     tests = [
-        {"name": "phi3-mini", "lasts" : [20, 25, 30, 35, 40], "repeats" : 10},
-        {"name": "llama3-8b", "lasts" : [20, 25, 30], "repeats" : 7},
+        {"name": "phi3-mini", "lasts" : [20, 25, 30, 40], "repeats" : 10},
+        {"name": "llama3-8b", "lasts" : [20, 30], "repeats" : 7},
         {"name" : "phi3-medium", "lasts" : [15], "repeats" : 3}
     ]
     
@@ -244,9 +244,9 @@ def alls(args):
     scoring_policies = [
         ('exploit', lambda B, R, I, N: exploit(B, R)),
         ('explore', lambda B, R, I, N: explore(B, R)),
-        ('b2', lambda B, R, I, N: (B**2) / (R + 1E-30)),
-        ('SimAnneal', lambda B, R, I, N: ((B + 1) ** m(I, N, 1) + (R + 1)) / (abs(B - R) + 1E-30)),
-        ('ExpProgressive', lambda B, R, I, N: m(I, N, 0) * exploit(B,R) + (1 - m(I, N, 0)) * explore(B,R))
+        #('b2', lambda B, R, I, N: (B**2) / (R + 1E-30)),
+        ('SimAnneal', lambda B, R, I, N: abs(((B + 1) ** m(I, N, 1) + (R + 1)) / (abs(B - R) + 1E-30))),
+        #('ExpProgressive', lambda B, R, I, N: m(I, N, 0) * exploit(B,R) + (1 - m(I, N, 0)) * explore(B,R))
     ]
             
     
