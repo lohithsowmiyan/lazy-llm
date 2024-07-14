@@ -221,12 +221,12 @@ def alls(args):
         best,_,_ = branch(d,d.rows,4); rxs[rx].add(d2h(d,best[0]))
 
     tests = [
-        {"name": "phi3-mini", "lasts" : [20, 25, 30, 40], "repeats" : 10},
-        {"name": "llama3-8b", "lasts" : [20, 30], "repeats" : 7},
-        {"name" : "phi3-medium", "lasts" : [15], "repeats" : 3}
+        {"name": "phi3-mini", "lasts" : [20, 25, 30, 40], "repeats" : 5},
+        {"name": "llama3-8b", "lasts" : [20, 30], "repeats" : 5},
+        {"name" : "phi3-medium", "lasts" : [15], "repeats" : 1}
     ]
     
-    k = min(800, len(d.rows))
+    k = min(500, len(d.rows))
     for test in tests:
         args.llm = test["name"]
         (model, dir) =  load_model(args).get_pipeline()
