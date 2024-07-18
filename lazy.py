@@ -179,7 +179,7 @@ if __name__ == "__main__":
         fews(args)
     if(args.model == 'zero'):
         ZERO(args,True)
-    if(args.model == 'zeros')
+    if(args.model == 'zeros'):
         zeros(args)
 
     #print(save_results())
