@@ -573,12 +573,13 @@ class SOME:
     def dur(i):
       "Returns the duration of the current experiment"
       duration = i.end - i.start
-      if duration < 60:
-        return f"{duration:.2f} secs"
-      elif duration < 3600:
-        return f"{duration / 60:.2f} mins"
-      else:
-        return f"{duration / 3600:.2f} hours"
+      return f"{duration:.2f}"
+      #if duration < 60:
+      #  return f"{duration:.2f} secs"
+      #elif duration < 3600:
+      #  return f"{duration / 60:.2f} mins"
+      #else:
+      #  return f"{duration / 3600:.2f} hours"
 
     def mid(i) -> number:
       "Return the middle of the distribution."
