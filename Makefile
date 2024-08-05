@@ -21,7 +21,7 @@ MAKEFLAGS += --warn-undefined-variables
 .SILENT:  
 
 Root=$(shell git rev-parse --show-toplevel)
-OUTPUT_FILE := var
+OUTPUT_FILE := var/out/fews/auto93.csv
 GIT_MESSAGE := saving the output
 
 help      :  ## show help
@@ -86,8 +86,9 @@ push    : ## save
 	git commit -m "$(GIT_MESSAGE)"
 	git push
 
-var/out/alls/auto93.csv : data/misc/auto93.csv
+var/out/fews/auto93.csv : data/misc/auto93.csv
 	mkdir -p $(dir $@)
+	git pull
 	echo $<; python3 ./lazy.py --dataset $< --model alls | tee $@
 	git add $(OUTPUT_FILE)
 	git commit -m "$(GIT_MESSAGE)"
