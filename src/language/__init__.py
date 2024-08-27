@@ -12,19 +12,18 @@ local_model_path = {
     "phi3-small" : "microsoft/Phi-3-small-8k-instruct",
     "phi3-medium" : "microsoft/Phi-3-medium-4k-instruct",
     "mistral-7b" : "mistralai/Mistral-7B-Instruct-v0.3"
-
 }
 
-def load_model(args) -> LLM:
+def load_model(args, name = None) -> LLM:
     """
 
     """
 
-    if args.llm in api_model_path.keys():
-        return API_LLM(api_model_path[args.llm], args.temperature, args.max_tokens, args.top_p)
+    if args.llm in api_model_path.keys() or name in api_model_path.keys():
+        return API_LLM(api_model_path[args.llm] if name == None else name, args.temperature, args.max_tokens, args.top_p)
 
-    elif args.llm in local_model_path.keys():
-        return Local_LLM(local_model_path[args.llm], args.temperature, args.max_tokens, args.top_p, quantization =  args.quantization, nbits = args.q_bits)
+    elif args.llm in local_model_path.keys() or name in local_model_path.keys():
+        return Local_LLM(local_model_path[args.llm] if name == None else name, args.temperature, args.max_tokens, args.top_p, quantization =  args.quantization, nbits = args.q_bits)
 
     else:
         raise Exception("Model Not Found. Add the Model to src/models/__init__.py")

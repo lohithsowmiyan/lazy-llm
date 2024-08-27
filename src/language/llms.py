@@ -93,7 +93,7 @@ class API_LLM(LLM):
     def __init__(self, model_name : str, temperature : float, max_tokens : int, top_p : float, **kwargs):
         super().__init__(model_name, temperature, max_tokens, top_p)
 
-    def get_model(self):
+    def get_pipeline(self):
         if "gemini" in self.model_name:
             if "GOOGLE_API_KEY" not in os.environ:
                 print("Unable to find the API key please enter here:")
