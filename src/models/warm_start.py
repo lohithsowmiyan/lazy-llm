@@ -7,6 +7,7 @@ from graph import visualize
 from src.language.llms import unload_model
 from src.prompts.synthetic import SYNTHETIC
 import warnings
+import json
 import time
 
 def WARM_FEW(args):
@@ -30,12 +31,35 @@ def WARM_FEW(args):
         sythetic = SYNTHETIC(i, best, rest)
         messages = sythetic.get_langchain_template()
 
-        
-
+        #print(messages)
 
         #prompt = model.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         #outputs = model(prompt, max_new_tokens=512,  do_sample=True, temperature=0.7, top_p=0.9) #eos_token_id=terminators,
-        print(model.invoke(messages))
+        result = model.invoke(messages).content
+        
+        json_start = result.find('{')
+
+        # Find the ending position of the JSON object
+        json_end = result.rfind('}') + 1
+
+        # Extract the JSON string
+        json_str = result[json_start:json_end]
+
+        # Parse the JSON string
+        data = json.loads(json_str)
+
+        # You can now store or use the data as needed
+        #print(data)
+
+        best = []
+        rest = []
+
+        for lst in data['better_examples']:
+            best.append(lst['features'])
+        for lst in data['poorer_examples']:
+            rest.append(lst['features'])
+
+        print(best, rest)
 
         #unload_model(model, dir)
 
