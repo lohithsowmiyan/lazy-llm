@@ -11,6 +11,7 @@ import time
 from src.models.few import FEW
 from src.models.smo import SMO
 from src.models.zero import ZERO
+from src.models.warm_start import WARM_FEW
 
 
 def explore(B, R):
@@ -181,6 +182,9 @@ if __name__ == "__main__":
         ZERO(args,True)
     if(args.model == 'zeros'):
         zeros(args)
+
+    if(args.model == 'warm'):
+        WARM_FEW(args)
 
     #print(save_results())
 
