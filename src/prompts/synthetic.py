@@ -48,3 +48,42 @@ class SYNTHETIC():
         
 
         return messages
+
+    def get_langchain_template(self):
+
+        
+
+        
+        messages = [
+        ("system" , f'''
+        You are given a dataset with several features. The rows has been categorized into "best" and "rest" examples based on their overall performance. Below are the key features and their descriptions from the dataset:
+        ...
+        {self.Features}
+        '''),
+        ("human",  f'''
+        **Given Examples:**
+
+        1. **Best Example 1**: {self.best[0][:self.x]}
+        2. **Best Example 2**: {self.best[0][:self.x]}
+        3. **Rest Example 1**: {self.rest[1][:self.x]}
+        4. **Rest Example 2**: {self.rest[1][:self.x]}
+       '''
+        ),
+        ("human",  f'''
+        **Task:**
+        1. **Generate Two New Examples that are Better**: These should outperform the given "Best" examples by optimizing the relevant features to better combinations.
+        2. **Generate Two New Examples that are Poorer**: These should underperform the given "Rest" examples by modifying the relevant features to worse combinations.
+
+        Consider the interdependencies between features, and ensure that the generated examples follow logical consistency within the dataset's context.
+        **Return the output as a JSON object with the following structure:**
+        '''
+        )]
+        
+
+        return messages
+
+
+
+
+
+

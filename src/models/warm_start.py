@@ -21,26 +21,30 @@ def WARM_FEW(args):
 
     def _synthesise(i : data, done: rows):
         "Synthesise better examples based on the initial random samples"
-        (model, dir) =  load_model(args).get_pipeline()
+        #(model, dir) =  load_model(args).get_pipeline()
+        model = load_model(args, name = 'gemini').get_pipeline()
         cut = int(.5 + len(done) ** 0.5)
         best = clone(i, done[:cut]).rows
         rest = clone(i, done[cut:]).rows
 
         sythetic = SYNTHETIC(i, best, rest)
-        messages = sythetic.get_template()
+        messages = sythetic.get_langchain_template()
 
-        prompt = model.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        outputs = model(prompt, max_new_tokens=512,  do_sample=True, temperature=0.7, top_p=0.9) #eos_token_id=terminators,
-        print(outputs[0]['generated_text'])
+        
 
-        unload_model(model, dir)
+
+        #prompt = model.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        #outputs = model(prompt, max_new_tokens=512,  do_sample=True, temperature=0.7, top_p=0.9) #eos_token_id=terminators,
+        print(model.invoke(messages))
+
+        #unload_model(model, dir)
 
 
 
     def n_examples(i: data, todo:rows, done:rows) -> rows:
         "Guess the `top`  unlabeled row, add that to `done`, resort `done`,and repeat"
         results = _synthesise(i, done)
-        #print(i)
+        
 
         
         
