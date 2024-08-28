@@ -21,7 +21,7 @@ MAKEFLAGS += --warn-undefined-variables
 .SILENT:  
 
 Root=$(shell git rev-parse --show-toplevel)
-OUTPUT_FILE := var/out/fews/auto93.csv
+OUTPUT_FILE := var
 GIT_MESSAGE := saving the output
 
 help      :  ## show help
@@ -111,3 +111,16 @@ var/out/smos/%.csv : data/hpo/%.csv     ; echo $<; ./ezr.py -t $< -R smos | tee 
 smos: 
 	mkdir -p var/out/smos
 	$(MAKE) -j $(SMOS)
+
+WARM_SMOS= $(subst data/config,var/out/warms,$(wildcard data/config/*.csv))
+
+var/out/warms/%.csv : data/config/%.csv  ; python3 ./lazy.py --dataset $< --model warms | tee $@
+
+warms:
+	mkdir -p var/out/warms
+	$(MAKE)  $(WARM_SMOS)
+	git add $(OUTPUT_FILE)
+	git commit -m "$(GIT_MESSAGE)"
+	git push
+
+
