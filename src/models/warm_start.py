@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 from src.prompts import load_prompt
 from src.utils.results import save_results_txt
 from graph import visualize 
-from src.language.llms import unload_model
 from src.prompts.synthetic import SYNTHETIC
 import warnings
 import json

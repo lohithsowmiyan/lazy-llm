@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 from src.prompts import load_prompt
 from src.utils.results import save_results_txt
 from graph import visualize 
-from src.language.llms import unload_model
 import warnings
 import time
 
@@ -13,7 +12,8 @@ def ZERO(args, save_results = False, k = 100, model = None):
     loaded_here = False
     if model == None:
         loaded_here = True
-        (model, dir) =  load_model(args).get_pipeline()
+        model =  load_model(args)
+        pipe = model.get_pipeline()
     #random.seed(args.seed)
     records = []
     def _tile(lst, curd2h, budget):
@@ -44,9 +44,8 @@ def ZERO(args, save_results = False, k = 100, model = None):
             best = [b[:len(i.cols.x)] for b in best]
             rest = [r[:len(i.cols.x)] for r in rest]
             messages = load_prompt(args.dataset).getZeroShot(current[:len(i.cols.x)], cols = i.cols.x)
-            prompt = model.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-            model.model.config.pad_token_id = model.model.config.eos_token_id
-            outputs = model(prompt, max_new_tokens=256,  do_sample=True, temperature=0.5, top_p=0.9) #eos_token_id=terminators,
+            prompt = pipe.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+            outputs = pipe(prompt, max_new_tokens=256,  do_sample=True, temperature=0.5, top_p=0.9) #eos_token_id=terminators,
             print(outputs[0]['generated_text']) if args.intermediate else None
             if "best" in outputs[0]['generated_text'][len(prompt):].lower(): return current
             return None
@@ -76,5 +75,5 @@ def ZERO(args, save_results = False, k = 100, model = None):
         visualize(dataset = args.dataset[args.dataset.rfind('/')+1:-4], show = 'All', save_fig= True, display = False)
     else: results = learner(DATA(csv(args.dataset)))
     if loaded_here:
-        unload_model(model, dir)
+        model.unload_model()
     return results
