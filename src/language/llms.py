@@ -27,8 +27,9 @@ class Local_LLM(LLM):
     """
 
     """
-    def __init__(self, model_name : str, temperature : float, max_tokens : int, top_p : float, **kwargs):
+    def __init__(self, model_name : str, temperature : float, max_tokens : int, top_p : float, cache = False,  **kwargs):
         super().__init__(model_name, temperature, max_tokens, top_p)
+        self.cache = False
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.quantization = kwargs.get('quantization', False)
         self.quant_bits = kwargs.get('nbits', 8)
@@ -50,8 +51,12 @@ class Local_LLM(LLM):
             )
 
     def get_pipeline(self):
-        temp_dir = tempfile.mkdtemp()
-        self.model = AutoModelForCausalLM.from_pretrained(self.model_name, cache_dir = temp_dir)
+        if not self.cache:
+            self.temp_dir = tempfile.mkdtemp()
+            self.model = AutoModelForCausalLM.from_pretrained(self.model_name, cache_dir = self.temp_dir)
+        else:
+            self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
+
         pipe = pipeline(
          "text-generation",
          model=self.model,
@@ -59,7 +64,7 @@ class Local_LLM(LLM):
          #device_map = "auto",
         )
 
-        return pipe, temp_dir
+        return pipe
 
     def get_params(self, pipe) -> str:
         model = pipe.model
@@ -85,6 +90,10 @@ class Local_LLM(LLM):
                 do_sample = True  
                )
 
+    def unload_model(self):
+        del self.model
+        gc.collect()
+        shutil.rmtree(self.temp_dir)
 
 class API_LLM(LLM):
     """
@@ -116,11 +125,7 @@ class API_LLM(LLM):
                         top_p= self.top_p
                 )
 
-def unload_model(model, temp_dir):
-    del model
-    gc.collect()
 
-    shutil.rmtree(temp_dir)
 
 
         
