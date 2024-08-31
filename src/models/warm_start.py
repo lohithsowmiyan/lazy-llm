@@ -108,10 +108,11 @@ def WARM_FEW_L(i:data, args):
         prompt = pipe.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         outputs = pipe(prompt, max_new_tokens=512,  do_sample=True, temperature=0.7, top_p=0.9) #eos_token_id=terminators,
         print(outputs)
+        outputs = outputs[0]['generated_text'][len(prompt):]
         #result = model.invoke(messages).content
         #print(result)
     
-        data = _post_process(output)
+        data = _post_process(outputs)
 
         best , rest = [], []
 

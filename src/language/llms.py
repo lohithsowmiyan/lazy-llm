@@ -89,7 +89,7 @@ class Local_LLM(LLM):
                 do_sample = True  
                )
 
-    def unload_model(self):
+    def unload_model(self): 
         del self.model
         gc.collect()
         shutil.rmtree(self.temp_dir)
