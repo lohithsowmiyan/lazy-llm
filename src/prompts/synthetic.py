@@ -43,6 +43,29 @@ class SYNTHETIC():
 
         Consider the interdependencies between features, and ensure that the generated examples follow logical consistency within the dataset's context.
         **Return the output as a JSON object with the following structure:**
+        ```json
+        {{
+            "better_examples" : [
+                {{
+                    "features" : [],
+                    "explanation" : "...",
+                }},
+                {{
+                    "features" : [],
+                    "explanation" : "...",
+                }}   
+            ],
+            "poorer_examples" : [
+                {{
+                    "features" : [],
+                    "explanation" : "...",
+                }},
+                {{
+                    "features" : [],
+                    "explanation" : "...",
+                }}   
+            ]
+        }}
         '''
         }]
         
