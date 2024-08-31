@@ -27,9 +27,9 @@ class Local_LLM(LLM):
     """
 
     """
-    def __init__(self, model_name : str, temperature : float, max_tokens : int, top_p : float, cache = False,  **kwargs):
+    def __init__(self, model_name : str, temperature : float, max_tokens : int, top_p : float, cache : bool,  **kwargs):
         super().__init__(model_name, temperature, max_tokens, top_p)
-        self.cache = False
+        self.cache = cache
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.quantization = kwargs.get('quantization', False)
         self.quant_bits = kwargs.get('nbits', 8)
