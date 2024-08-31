@@ -66,9 +66,8 @@ class Local_LLM(LLM):
 
         return pipe
 
-    def get_params(self, pipe) -> str:
-        model = pipe.model
-        total_params = sum(p.numel() for p in model.parameters())
+    def get_params() -> str:
+        total_params = sum(p.numel() for p in self.model.parameters())
         if total_params >= 1e9:
             return f"{total_params / 1e9:.1f}B"
         elif total_params >= 1e6:

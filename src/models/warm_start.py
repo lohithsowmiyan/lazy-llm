@@ -96,7 +96,8 @@ def WARM_FEW_L(i:data, args):
     def _synthesise(done: rows):
         "Synthesise better examples based on the initial random samples"
         #(model, dir) =  load_model(args).get_pipeline()
-        model = load_model(args).get_pipeline()
+        model = load_model(args)
+        pipe = model.get_pipeline()
         cut = int(.5 + len(done) ** 0.5)
         best = clone(i, done[:cut]).rows
         rest = clone(i, done[cut:]).rows
@@ -104,13 +105,13 @@ def WARM_FEW_L(i:data, args):
         sythetic = SYNTHETIC(i, best, rest)
 
         messages = sythetic.get_template()
-        prompt = model.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        outputs = model(prompt, max_new_tokens=512,  do_sample=True, temperature=0.7, top_p=0.9) #eos_token_id=terminators,
+        prompt = pipe.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        outputs = pipe(prompt, max_new_tokens=512,  do_sample=True, temperature=0.7, top_p=0.9) #eos_token_id=terminators,
         print(outputs)
         #result = model.invoke(messages).content
         #print(result)
     
-        data = _post_process(result)
+        data = _post_process(output)
 
         best , rest = [], []
 
@@ -118,7 +119,7 @@ def WARM_FEW_L(i:data, args):
             best.append(bst['features'])
             rest.append(rst['features'])
 
-        #print(best + rest)
+        return best + rest
 
         #unload_model(model, dir)
 
@@ -180,6 +181,6 @@ def warm_smo(args, score=lambda B,R,I,N: B-R, callBack=lambda x:x):
   # remove any  bias from older runs
   i = DATA(csv(args.dataset))
   done, new_done ,todo = WARM_FEW_L(i, args)
-  #return _smo1(todo, _ranked(done))
+  return _smo1(todo, _ranked(new_done))
 
     
