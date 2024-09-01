@@ -78,15 +78,7 @@ docs/%.html : %.py ## .py --> .html
 	ps2pdf $@.ps $@; rm $@.ps    
 	open $@
 
-FILES = data/config/SS-A.csv data/config/SS-C.csv data/config/SS-D.csv  
 
- # Replace with your list of file names
-
-run_files: 
-	@for file in $(FILES); do \
-		echo "Running $$file...";\
-		echo $<; python3 ./lazy.py --dataset $$file --model warms | tee $@; \
-	done
 
 
 
@@ -122,16 +114,24 @@ smos:
 	mkdir -p var/out/smos
 	$(MAKE) -j $(SMOS)
 
-WARM_SMOS= $(subst data/config,var/out/warms,$(wildcard data/config/*.csv))
 
-var/out/warms/%.csv : data/config/%.csv  ; python3 ./lazy.py --dataset $< --model warms | tee $@
 
+FILES = data/config/SS-B.csv data/config/SS-X.csv
+
+# Generate the target file paths for `var/out/smos`
+WARMS = $(patsubst data/config/%,$(shell echo var/out/warms/%),$(FILES)) 
+       
+# Pattern rules for processing files from different source directories
+var/out/warms/%.csv : data/config/%.csv
+	@echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
+# Target to create output directory and process the files
 warms:
 	mkdir -p var/out/warms
-	$(MAKE)  $(WARM_SMOS)
+	$(MAKE) -j $(WARMS)
 	git add $(OUTPUT_FILE)
 	git commit -m "$(GIT_MESSAGE)"
 	git push
+	
 
 
 
