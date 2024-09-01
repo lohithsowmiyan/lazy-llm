@@ -51,29 +51,18 @@ class Local_LLM(LLM):
             )
 
     def get_pipeline(self):
-        kwargs = {
-            "device_map": {
-                "transformer.h.0": 0,   # Load first layer on GPU 0
-                "transformer.h.1": "cpu",   # Load second layer on GPU 0
-                "transformer.h.2": "cpu",   # Load third layer on GPU 1
-                "transformer.h.3": "cpu",   # Load fourth layer on GPU 1
-                # Add more layers as needed
-                "transformer.ln_f": 0,  # Load final layer norm on GPU 0
-                "lm_head": 0            # Load output layer on GPU 0
-            },
-            "low_cpu_mem_usage": True,  # Optional: Reduce CPU memory usage
-        }
+
         if not self.cache:
             self.temp_dir = tempfile.mkdtemp()
-            self.model = AutoModelForCausalLM.from_pretrained(self.model_name, cache_dir = self.temp_dir, **kwargs)
+            self.model = AutoModelForCausalLM.from_pretrained(self.model_name, cache_dir = self.temp_dir)
         else:
-            self.model = AutoModelForCausalLM.from_pretrained(self.model_name, **kwargs)
+            self.model = AutoModelForCausalLM.from_pretrained(self.model_name, device_map= "auto")
 
         pipe = pipeline(
          "text-generation",
          model=self.model,
-         tokenizer = self.tokenizer
-         #device_map = "auto",
+         tokenizer = self.tokenizer,
+         device_map = "auto",
         )
 
         return pipe

@@ -181,7 +181,7 @@ def warm_smo(args, score=lambda B,R,I,N: B-R, callBack=lambda x:x):
 
   # remove any  bias from older runs
   i = DATA(csv(args.dataset))
-  done, new_done ,todo = WARM_FEW_L(i, args)
+  done, new_done ,todo = WARM_FEW_API(i, args)
   return _smo1(todo, _ranked(new_done))
 
     
