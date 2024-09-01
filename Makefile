@@ -78,12 +78,22 @@ docs/%.html : %.py ## .py --> .html
 	ps2pdf $@.ps $@; rm $@.ps    
 	open $@
 
+FILES = data/config/SS-A.csv data/config/SS-C.csv data/config/SS-D.csv  
+
+ # Replace with your list of file names
+
+run_files: 
+	@for file in $(FILES); do \
+		echo "Running $$file...";\
+		echo $<; python3 ./lazy.py --dataset $$file --model warms | tee $@; \
+	done
 
 
-#ALLS= $(subst data/hpo,var/out/alls,$(wildcard data/hpo/*.csv))
+
+ALLS= $(subst data/hpo,var/out/alls,$(wildcard data/hpo/*.csv))
 push    : ## save
 	git add $(OUTPUT_FILE)
-	git commit -m "$(GIT_MESSAGE)"
+	git commit -m "$(GIT_MESSAGE)
 	git push
 
 var/out/fews/auto93.csv : data/misc/auto93.csv
@@ -122,5 +132,7 @@ warms:
 	git add $(OUTPUT_FILE)
 	git commit -m "$(GIT_MESSAGE)"
 	git push
+
+
 
 
