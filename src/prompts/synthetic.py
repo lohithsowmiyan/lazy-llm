@@ -1,6 +1,27 @@
 from langchain_core.prompts import ChatPromptTemplate, FewShotChatMessagePromptTemplate
 from src.utils.ezr import rows,row,data, cols, NUM, SYM
 
+def rows_to_markdown(table:data):
+    """
+    Converts a 2D list (table) to Markdown table format.
+
+    :param table: List of lists where each sublist represents a row in the table.
+    :return: String representing the table in Markdown format.
+    """
+    if not table:
+        return ""
+
+    col_widths = [max(len(str(cell)) for cell in col) for col in zip(*table)]
+    header = "| " + " | ".join(str(cell).ljust(col_widths[i]) for i, cell in enumerate(table[0])) + " |"
+    separator = "|-" + "-|-".join("-" * width for width in col_widths) + "-|"
+    rows = [
+        "| " + " | ".join(str(cell).ljust(col_widths[i]) for i, cell in enumerate(row)) + " |"
+        for row in table[1:]
+    ]
+    markdown_table = "\n".join([header, separator] + rows)
+    
+    return markdown_table
+
 class SYNTHETIC():
 
     def __init__(self, i:data, best: rows, rest:rows):
@@ -125,57 +146,28 @@ class SYNTHETIC():
 
         return messages
 
-    def _to_markdown(self, i:data):
-        """
-        Converts a 2D list (table) to Markdown table format.
-
-        :param table: List of lists where each sublist represents a row in the table.
-        :return: String representing the table in Markdown format.
-        """
-        if not table:
-            return ""
-
-        col_widths = [max(len(str(cell)) for cell in col) for col in zip(*table)]
-        header = "| " + " | ".join(str(cell).ljust(col_widths[i]) for i, cell in enumerate(table[0])) + " |"
-        separator = "|-" + "-|-".join("-" * width for width in col_widths) + "-|"
-        rows = [
-            "| " + " | ".join(str(cell).ljust(col_widths[i]) for i, cell in enumerate(row)) + " |"
-            for row in table[1:]
-        ]
-        markdown_table = "\n".join([header, separator] + rows)
-        
-        return markdown_table
-
-
     def get_template_markdown(self):
 
-        table = [[col.txt for col in i.cols.x] + ['Class']] + [b + ['Best'] for b in self.best] + [r + ['Rest'] for r in self.rest]
+        table = [[col.txt for col in self.i.cols.x] + ['Class']] + [b[:self.x] + ['Best'] for b in self.best] + [r[:self.x] + ['Rest'] for r in self.rest]
 
-        [
-        f'Feature {col.at + 1} : (name : {col.txt}, type : {self.meta[col.this]}, range : [{col.lo} - {col.hi}])'
-        if col.this == NUM
-        else f'Feature {col.at + 1} : (name : {col.txt}, type : {self.meta[col.this]})'
-        for col in i.cols.x
-        ]
-
-        headers = ['Position', 'Name', 'Type', 'Lowest', 'Highest', 'Unique']
+        headers = ['S.No', 'Name', 'Type', 'Lowest', 'Highest', 'Unique']
 
         new_Features = [headers] + [
         [col.at+1 , col.txt, self.meta[col.this], col.lo, col.hi, 'N/A']
         if col.this == NUM 
-        else [col.at+1, col.txt, self.meta[col.this], 'N/A', 'N/A', ",".join([unq for unq in col.has.keys])]
-        for col in i.cols.x
+        else [col.at+1, col.txt, self.meta[col.this], 'N/A', 'N/A', col.has]
+        for col in self.i.cols.x
         ]
-
+       
         messages = [
         ("system" , f'''
         You are given a dataset with several features. The rows has been categorized into "best" and "rest" examples based on their overall performance. Below are the key features and their descriptions from the dataset:
         ...
-        {_to_markdown(new_Features)}
+        {rows_to_markdown(new_Features)}
         '''),
         ("human",  f'''
         **Given Examples:**
-        {_to_markdown(table)}
+        {rows_to_markdown(table)}
        '''
         ),
         ("human",  f'''
@@ -184,30 +176,7 @@ class SYNTHETIC():
         2. **Generate Two New Examples that are Poorer**: These should underperform the given "Rest" examples by modifying the relevant features to worse combinations.
 
         Consider the interdependencies between features, and ensure that the generated examples follow logical consistency within the dataset's context.
-        **Return the output as a JSON object with the following structure:**
-        ```json
-        {{
-            "better_examples" : [
-                {{
-                    "features" : [],
-                    "explanation" : "...",
-                }},
-                {{
-                    "features" : [],
-                    "explanation" : "...",
-                }}   
-            ],
-            "poorer_examples" : [
-                {{
-                    "features" : [],
-                    "explanation" : "...",
-                }},
-                {{
-                    "features" : [],
-                    "explanation" : "...",
-                }}   
-            ]
-        }}
+        **Return the output in the same mardown structure: !Just the output table alone and Don't add the input rows to the table**
         '''
         )]
 

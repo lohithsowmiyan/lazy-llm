@@ -23,9 +23,35 @@ def WARM_FEW_API(i: data, args):
         json_start = result.find('{')
         json_end = result.rfind('}') + 1
         json_str = result[json_start:json_end]
-        return json.loads(json_str)
+        data = json.loads(json_str)
+        best , rest = [], []
 
+        for bst,rst in zip(data['better_examples'], data['poorer_examples']):
+            best.append(bst['features'])
+            rest.append(rst['features'])   
 
+        return best,rest
+
+    def _markdown_to_rows(markdown):
+        """
+        Converts a Markdown table to a list of lists (rows).
+
+        :param markdown: String containing the Markdown table.
+        :return: List of lists where each sublist represents a row in the table.
+        """
+        lines = markdown.strip().split('\n')
+        lines.pop(1)
+        rows = [line.strip('|').split('|') for line in lines]
+        rows = [[cell.strip() for cell in row] for row in rows]
+        rows = rows[1:]
+
+        best, rest = [], []
+
+        for r in rows:
+            if r[-1] == 'Best': best.append([int(val) for val in r[:-1]])
+            elif r[-1] == 'Rest': rest.append([int(val) for val in r[:-1]])        
+        
+        return best,rest
 
     def _synthesise(done: rows):
         "Synthesise better examples based on the initial random samples"
@@ -36,27 +62,21 @@ def WARM_FEW_API(i: data, args):
         rest = clone(i, done[cut:]).rows
 
         sythetic = SYNTHETIC(i, best, rest)
-        messages = sythetic.get_langchain_template()
+        messages = sythetic.get_template_markdown()
 
-        #prompt = model.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        #outputs = model(prompt, max_new_tokens=512,  do_sample=True, temperature=0.7, top_p=0.9) #eos_token_id=terminators,
-        #print(messages)
+        
         result = model.invoke(messages).content
-        #print(result)
-    
-        data = _post_process(result)
+        
+        best, rest = _markdown_to_rows(result)
+        #print(best, rest)
 
-        best , rest = [], []
-
-        for bst,rst in zip(data['better_examples'], data['poorer_examples']):
-            best.append(bst['features'])
-            rest.append(rst['features'])
+        
 
         return best + rest 
-
+       
         #unload_model(model, dir)
 
-
+        
     def n_examples(todo:rows, done:rows):
         results = _synthesise(done)
 
@@ -111,7 +131,7 @@ def WARM_FEW_L(i:data, args):
         outputs = outputs[0]['generated_text'][len(prompt):]
         #result = model.invoke(messages).content
         #print(result)
-    
+        
         data = _post_process(outputs)
 
         best , rest = [], []
