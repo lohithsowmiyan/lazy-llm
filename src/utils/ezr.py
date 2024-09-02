@@ -98,7 +98,7 @@ def _COLS(names: list[str]) -> cols:
   return o(this=COLS, x=[], y=[], all=[], klass=None, names=names)
 
 def SYM(txt=" ",at=0) -> sym:  
-  "SYM columns incrementally summarizes a stream of symbols."
+  "SYM columns incrementally summarizes a stream of symbols." 
   return o(this=SYM, txt=txt, at=at, n=0, has={})
 
 def NUM(txt=" ",at=0,has=None) -> num:  
@@ -522,6 +522,40 @@ def smo(i:data, score=lambda B,R,I,N: B-R, callBack=lambda x:x ):
   random.shuffle(i.rows) # remove any  bias from older runs
   return _smo1(i.rows[the.label:], _ranked(i.rows[:the.label]))
 
+
+#--------- --------- --------- --------- --------- --------- --------- --------- ---------
+# ## Correlation
+
+def correlation(i : data, col1 : cols, col2 : cols) -> num:
+  "Calculates the correlation between two columns"
+  if col1.this == SYM or col2.this == SYM:
+    return None
+    
+  n = len(i.rows)
+
+  # Calculate sums
+  col1_sum = sum(row[col1.at] for row in i.rows)
+  col2_sum = sum(row[col2.at] for row in i.rows)
+
+  # Calculate sum of squares
+  col1_ssum = sum(row[col1.at]**2 for row in i.rows)
+  col2_ssum = sum(row[col2.at]**2 for row in i.rows)
+
+  # Calculate sum of products
+  col12_sum = sum(row[col1.at] * row[col2.at] for row in i.rows)
+
+  # Calculate numerator and denominator for the Pearson correlation formula
+  numerator = n * col12_sum - col1_sum * col2_sum
+  denominator = ((n * col1_ssum - col1_sum**2) * (n * col2_ssum - col2_sum**2))**0.5
+
+  # Avoid division by zero
+  if denominator == 0:
+      return 0
+
+  return numerator / denominator
+
+  
+
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 # ## Stats
 
@@ -765,6 +799,22 @@ class eg:
   def all():
     "Run all actions. Return to OS a count of failing actions (those returning `False`.."
     sys.exit(sum(run(s)==False for s in dir(eg) if s[0] !="_" and s !=  "all"))
+
+  def corr():
+    data1 = DATA(csv(the.train))
+    #print(data1)
+    x = data1.cols.x[0]
+    y = data1.cols.x[1]
+
+    c = []
+    for col1 in data1.cols.x:
+      temp = []
+      for col2 in data1.cols.x:
+        temp.append(correlation(data1, col1, col2))
+      c.append(temp)
+    
+    print(c)
+
 
   def help():
     "Print help."
