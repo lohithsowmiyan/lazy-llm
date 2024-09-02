@@ -62,7 +62,8 @@ def WARM_FEW_API(i: data, args):
         rest = clone(i, done[cut:]).rows
 
         sythetic = SYNTHETIC(i, best, rest)
-        messages = sythetic.get_template_markdown()
+        messages = sythetic.get_template_correlation()
+        
 
         
         result = model.invoke(messages).content

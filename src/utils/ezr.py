@@ -552,7 +552,7 @@ def correlation(i : data, col1 : cols, col2 : cols) -> num:
   if denominator == 0:
       return 0
 
-  return numerator / denominator
+  return "%.3f" % (numerator / denominator)
 
   
 
