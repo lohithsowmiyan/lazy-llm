@@ -69,8 +69,8 @@ def WARM_FEW_API(i: data, args):
         best, rest = [], []
 
         for r in rows:
-            if r[-1] == 'Best': best.append([int(val) for val in r[:-1]])
-            elif r[-1] == 'Rest': rest.append([int(val) for val in r[:-1]])        
+            if r[-1] == 'Best': best.append([float(val) for val in r[:-1]])
+            elif r[-1] == 'Rest': rest.append([float(val) for val in r[:-1]])        
         
         return best,rest
 
@@ -136,7 +136,7 @@ def WARM_FEW_API(i: data, args):
 
         
     def n_examples(todo:rows, done:rows):
-        results = linear_extrapolation(done)
+        results = _synthesise(done)
 
         x_size = len(i.cols.x)
         new_done = []
