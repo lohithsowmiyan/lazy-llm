@@ -12,15 +12,8 @@ import time
 def WARM_FEW_API(i: data, args):
 
     def calculate_mean(example_list):
-        """
-        Calculate the mean of a list of examples.
-        
-        Parameters:
-            example_list (list of lists): A list containing examples, where each example is a list of features.
-            
-        Returns:
-            list: The mean of the examples as a list of features.
-        """
+        "Calculate the mean of a list of rows"
+
         n_examples = len(example_list)
         n_features = len(example_list[0])
         
@@ -54,12 +47,8 @@ def WARM_FEW_API(i: data, args):
         return best,rest
 
     def _markdown_to_rows(markdown):
-        """
-        Converts a Markdown table to a list of lists (rows).
-
-        :param markdown: String containing the Markdown table.
-        :return: List of lists where each sublist represents a row in the table.
-        """
+        "Converts a Markdown table to a list of lists (rows)."
+      
         lines = markdown.strip().split('\n')
         lines.pop(1)
         rows = [line.strip('|').split('|') for line in lines]
@@ -75,19 +64,7 @@ def WARM_FEW_API(i: data, args):
         return best,rest
 
     def linear_extrapolation(done, scale=0.5):
-        """
-        Perform linear extrapolation to generate better and worse examples.
-        
-        Parameters:
-            best_examples (list of lists): List of best examples, each example is a list of features.
-            rest_examples (list of lists): List of rest examples, each example is a list of features.
-            scale (float): Scaling factor for extrapolation, default is 0.5
-        
-        Returns:
-            better_examples (list of lists): Extrapolated better examples
-            worse_examples (list of lists): Extrapolated worse examples
-        """
-        # Calculate the mean of the best and rest examples
+        "Perform linear extrapolation to generate better and worse examples."
 
         cut = int(.5 + len(done) ** 0.5)
         best = clone(i, done[:cut]).rows
@@ -96,15 +73,11 @@ def WARM_FEW_API(i: data, args):
         best = best[:len(i.cols.x)]
         rest = rest[:len(i.cols.x)]
 
-
-
         mean_best = calculate_mean(best)
         mean_rest = calculate_mean(rest)
         
         difference = [mean_best[idx] - mean_rest[idx] for idx in range(len(mean_best))]
-
         better_examples = [[b[idx] + scale * difference[idx]  for idx in range(len(b))] for b in best]
-
         worse_examples = [[r[idx] - scale * difference[idx]  for idx in range(len(r))] for r in rest]
         
         return better_examples + worse_examples 
@@ -120,22 +93,16 @@ def WARM_FEW_API(i: data, args):
 
         sythetic = SYNTHETIC(i, best, rest)
         messages = sythetic.get_template_correlation()
-        
-
-        
+      
         result = model.invoke(messages).content
         
         best, rest = _markdown_to_rows(result)
         #print(best, rest)
 
-        
-
         return best + rest 
-       
-        #unload_model(model, dir)
-
         
     def n_examples(todo:rows, done:rows):
+        "get the 4 start samples ready for active learning"
         results = _synthesise(done)
 
         x_size = len(i.cols.x)
@@ -155,76 +122,6 @@ def WARM_FEW_API(i: data, args):
     random.shuffle(i.rows) # remove any  bias from older runs
     return n_examples(i.rows[args.label:],_ranked(i.rows[:args.label]))
 
-def WARM_FEW_L(i:data, args):
-     
-    def _ranked(lst:rows, cur:row = None) -> rows:
-        "Sort `lst` by distance to heaven. Called by `_smo1()`."
-        lst = sorted(lst, key = lambda r:d2h(i,r))
-        #callBack([d2h(i,r) for r in lst], 0 if cur == None else d2h(i,cur))
-        return lst
-
-
-    def _post_process(result : str) -> dict:
-        "Converts the output from the model to usable"
-        json_start = result.find('{')
-        json_end = result.rfind('}') + 1
-        json_str = result[json_start:json_end]
-        return json.loads(json_str)
-
-
-
-    def _synthesise(done: rows):
-        "Synthesise better examples based on the initial random samples"
-        #(model, dir) =  load_model(args).get_pipeline()
-        model = load_model(args)
-        pipe = model.get_pipeline()
-        cut = int(.5 + len(done) ** 0.5)
-        best = clone(i, done[:cut]).rows
-        rest = clone(i, done[cut:]).rows
-
-        sythetic = SYNTHETIC(i, best, rest)
-
-        messages = sythetic.get_template()
-        prompt = pipe.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        outputs = pipe(prompt, max_new_tokens=512,  do_sample=True, temperature=0.7, top_p=0.9) #eos_token_id=terminators,
-        print(outputs)
-        outputs = outputs[0]['generated_text'][len(prompt):]
-        #result = model.invoke(messages).content
-        #print(result)
-        
-        data = _post_process(outputs)
-
-        best , rest = [], []
-
-        for bst,rst in zip(data['better_examples'], data['poorer_examples']):
-            best.append(bst['features'])
-            rest.append(rst['features'])
-
-        return best + rest
-
-        #unload_model(model, dir)
-
-
-    def n_examples(todo:rows, done:rows):
-        results = _synthesise(done)
-
-        x_size = len(i.cols.x)
-        new_done = []
-        for record in results:
-            random.shuffle(todo)
-            key = lambda r : dists(i, record, r[:x_size])
-            top, *todo= sorted(todo, key=key, reverse=False)
-            new_done.append(top)
-        
-        
-        #print(results)
-        #print(new_done)
-        
-        
-
-
-    random.shuffle(i.rows) # remove any  bias from older runs
-    return n_examples(i.rows[args.label:],_ranked(i.rows[:args.label]))
 
 
 def warm_smo(args, score=lambda B,R,I,N: B-R, callBack=lambda x:x):
