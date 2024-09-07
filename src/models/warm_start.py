@@ -10,6 +10,27 @@ import json
 import time
 
 def WARM_FEW_API(i: data, args):
+
+    def calculate_mean(example_list):
+        """
+        Calculate the mean of a list of examples.
+        
+        Parameters:
+            example_list (list of lists): A list containing examples, where each example is a list of features.
+            
+        Returns:
+            list: The mean of the examples as a list of features.
+        """
+        n_examples = len(example_list)
+        n_features = len(example_list[0])
+        
+        mean = [0] * n_features
+        for example in example_list:
+            for i in range(n_features):
+                mean[i] += example[i]
+        
+        mean = [x / n_examples for x in mean]
+        return mean
     
     def _ranked(lst:rows, cur:row = None) -> rows:
         "Sort `lst` by distance to heaven. Called by `_smo1()`."
@@ -53,6 +74,42 @@ def WARM_FEW_API(i: data, args):
         
         return best,rest
 
+    def linear_extrapolation(done, scale=0.5):
+        """
+        Perform linear extrapolation to generate better and worse examples.
+        
+        Parameters:
+            best_examples (list of lists): List of best examples, each example is a list of features.
+            rest_examples (list of lists): List of rest examples, each example is a list of features.
+            scale (float): Scaling factor for extrapolation, default is 0.5
+        
+        Returns:
+            better_examples (list of lists): Extrapolated better examples
+            worse_examples (list of lists): Extrapolated worse examples
+        """
+        # Calculate the mean of the best and rest examples
+
+        cut = int(.5 + len(done) ** 0.5)
+        best = clone(i, done[:cut]).rows
+        rest = clone(i, done[cut:]).rows
+
+        best = best[:len(i.cols.x)]
+        rest = rest[:len(i.cols.x)]
+
+
+
+        mean_best = calculate_mean(best)
+        mean_rest = calculate_mean(rest)
+        
+        difference = [mean_best[idx] - mean_rest[idx] for idx in range(len(mean_best))]
+
+        better_examples = [[b[idx] + scale * difference[idx]  for idx in range(len(b))] for b in best]
+
+        worse_examples = [[r[idx] - scale * difference[idx]  for idx in range(len(r))] for r in rest]
+        
+        return better_examples + worse_examples 
+
+
     def _synthesise(done: rows):
         "Synthesise better examples based on the initial random samples"
         #(model, dir) =  load_model(args).get_pipeline()
@@ -79,7 +136,7 @@ def WARM_FEW_API(i: data, args):
 
         
     def n_examples(todo:rows, done:rows):
-        results = _synthesise(done)
+        results = linear_extrapolation(done)
 
         x_size = len(i.cols.x)
         new_done = []
@@ -91,7 +148,9 @@ def WARM_FEW_API(i: data, args):
 
         #print(results)
         #print(new_done)
-        return done, new_done, todo
+        combined = _ranked(done+new_done)
+        new_done = [combined[0],combined[1],combined[-1],combined[-2]]
+        return done, new_done ,todo
 
     random.shuffle(i.rows) # remove any  bias from older runs
     return n_examples(i.rows[args.label:],_ranked(i.rows[:args.label]))
@@ -160,11 +219,12 @@ def WARM_FEW_L(i:data, args):
         
         #print(results)
         #print(new_done)
-        return done, new_done, todo
+        
+        
+
 
     random.shuffle(i.rows) # remove any  bias from older runs
     return n_examples(i.rows[args.label:],_ranked(i.rows[:args.label]))
-
 
 
 def warm_smo(args, score=lambda B,R,I,N: B-R, callBack=lambda x:x):
