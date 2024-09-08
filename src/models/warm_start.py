@@ -3,7 +3,7 @@ from src.language import load_model
 from dotenv import load_dotenv
 from src.prompts import load_prompt
 from src.utils.results import save_results_txt
-from graph import visualize 
+from graph import visualize2 
 from src.prompts.synthetic import SYNTHETIC
 import warnings
 import json
@@ -113,8 +113,6 @@ def WARM_FEW_API(i: data, args):
             top, *todo= sorted(todo, key=key, reverse=False)
             new_done.append(top)
 
-        #print(results)
-        #print(new_done)
         combined = _ranked(done+new_done)
         new_done = [combined[0],combined[1],combined[-1],combined[-2]]
         return done, new_done ,todo
@@ -147,19 +145,32 @@ def warm_smo(args, score=lambda B,R,I,N: B-R, callBack=lambda x:x):
 
     #return sorted(todo,key=key,reverse=True)
 
-  def _smo1(todo:rows, done:rows) -> rows:
+  def _smo1(todo:rows, done:rows, most: row) -> rows:
     "Guess the `top`  unlabeled row, add that to `done`, resort `done`, and repeat"
     for k in range(args.last - args.label):
       if len(todo) < 3: break
       top,*todo = _guess(todo, done)
       #print(d2h(i,top))
+      most = top if not most or d2h(i,top) < d2h(i,most) else most
       done += [top]
       done = _ranked(done)
-    return done
+    return done,most
 
   # remove any  bias from older runs
+  most = []
   i = DATA(csv(args.dataset))
   done, new_done ,todo = WARM_FEW_API(i, args)
-  return _smo1(todo, _ranked(new_done))
+  results, most =  _smo1(todo, _ranked(new_done), most)
+  if(True):
+        time.sleep(5)
+        visualize2(
+        i, 
+        [most], 
+        new_done[:2], 
+        new_done[2:], 
+        results, 
+        policy='warm_explore'
+        )
+  return results
 
     

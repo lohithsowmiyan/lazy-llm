@@ -6,6 +6,7 @@ from imgcat import imgcat
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
+from src.utils.pca import PCA
 
 def visualize(path = './output/', folder = 'single_run/' , dataset = 'auto93', show = 'All' , save_fig = False, display = False):
     data_list = []
@@ -75,6 +76,48 @@ def visualize(path = './output/', folder = 'single_run/' , dataset = 'auto93', s
             im = np.asarray(Image.open(f"{path}img/{dataset}_temp.png"))
             imgcat(im,height= 10, width = 90)
             os.remove(f"{path}img/{dataset}_temp.png")
+
+
+def visualize2(i, most, best, rest , done, policy):
+
+    i_pca, eigenvectors = PCA(i.rows)
+    # Transform `most` and `done` using the same PCA transformation
+    most_meaned = most - np.mean(i.rows, axis=0)  # Center `most` using mean of `i`
+    done_meaned = done - np.mean(i.rows, axis=0)  # Center `done` using mean of `i`
+    best_meaned = best - np.mean(i.rows, axis=0)
+    rest_meaned = rest - np.mean(i.rows, axis=0)
+
+    most_pca = np.dot(most_meaned, eigenvectors)
+    done_pca = np.dot(done_meaned, eigenvectors)
+    best_pca = np.dot(best_meaned, eigenvectors)
+    rest_pca = np.dot(rest_meaned, eigenvectors)
+
+    plt.figure(figsize=(8, 6))
+
+    # Scatter plot for `i`
+    plt.scatter(i_pca[:, 0], i_pca[:, 1], color='gray', label='i', alpha=0.5)
+    plt.scatter(done_pca[:, 0], done_pca[:, 1], color='black', label='done', alpha=0.8)
+    # Scatter plot for `most`
+    plt.scatter(most_pca[:, 0], most_pca[:, 1], color='green', label='most', alpha=0.8)
+
+    plt.scatter(best_pca[:, 0], best_pca[:, 1], color='blue', label='initial best', alpha=0.8)
+
+    plt.scatter(rest_pca[:, 0], rest_pca[:, 1], color='red', label='initial rest', alpha=0.2)
+
+    # Scatter plot for `done`
+   
+
+    # Adding labels and title
+    plt.xlabel('Principal Component 1')
+    plt.ylabel('Principal Component 2')
+    plt.title(f'{policy}')
+    plt.legend()
+
+    # Show the plot
+    plt.show()
+    plt.savefig('output/img/warms.png')
+
+
 
 
 
