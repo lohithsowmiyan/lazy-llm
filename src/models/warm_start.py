@@ -103,7 +103,7 @@ def WARM_FEW_API(i: data, args, method = 'LLMExtra'):
         
     def n_examples(todo:rows, done:rows):
         "get the 4 start samples ready for active learning"
-        results = _synthesise(done) if method == 'LLMExtra' else linear_extrapolation(done)
+        results = _synthesise(done) if method == 'LLM' else linear_extrapolation(done)
 
         x_size = len(i.cols.x)
         new_done = []
@@ -122,7 +122,7 @@ def WARM_FEW_API(i: data, args, method = 'LLMExtra'):
 
 
 
-def warm_smo(args, score=lambda B,R,I,N: B-R, method ='LLMExtra'):
+def warm_smo(args, score=lambda B,R,I,N: B-R, method ='LLM'):
   "Sequential model optimization."
   def _ranked(lst:rows) -> rows:
     "Sort `lst` by distance to heaven. Called by `_smo1()`."

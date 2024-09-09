@@ -213,7 +213,7 @@ def warms(args):
         btw("\n")
       
       for  guessFaster in [True]:
-        for start in ['LINExtra', 'LLMExtra']:
+        for start in ['LINEAR', 'LLM']:
             for what,how in  scoring_policies:
                 the.GuessFaster = guessFaster
                 rx=f"{start}/{what},{the.Last}"
@@ -221,7 +221,7 @@ def warms(args):
                 for _ in range(repeats):
                     btw(".")
                     time.sleep(10)
-                    if start == 'LLMExtra' and len(d.rows) < 300: # this heuristic works because LLM warm start performs poorly across all small datasets
+                    if start == 'LLM' and len(d.rows) < 200: # this heuristic works because LLM warm start performs poorly across all small datasets
                         rxs[rx].add(d2h(d,smo(d,how)[0]))
                     else : rxs[rx].add(d2h(d,warm_smo(args,how,method = start)[0]))
             btw("\n")
