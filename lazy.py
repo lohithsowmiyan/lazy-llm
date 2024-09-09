@@ -220,11 +220,13 @@ def warms(args):
                 rxs[rx] = SOME(txt=rx)
                 for _ in range(repeats):
                     btw(".")
-                    time.sleep(10)
+                    #time.sleep(10)
                     if start == 'LLM' and len(d.rows) < 200: # this heuristic works because LLM warm start performs poorly across all small datasets
                         rxs[rx].add(d2h(d,smo(d,how)[0]))
                     else : rxs[rx].add(d2h(d,warm_smo(args,how,method = start)[0]))
             btw("\n")
+
+            
        
 
 

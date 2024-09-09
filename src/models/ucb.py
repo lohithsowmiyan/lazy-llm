@@ -65,12 +65,11 @@ def _UCB_GPM(i, todo, done):
          
         done.append(best_candidate)
     
-    return sorted(done, key = lambda r:d2h(i,r))
+    return _ranked(done)
 
 def _ranked(i,lst:rows) -> rows:
     "Sort `lst` by distance to heaven. Called by `_smo1()`."
     lst = sorted(lst, key = lambda r:d2h(i,r))
-    #callBack([d2h(i,r) for r in lst])
     return lst
 
 def ucbs(args):

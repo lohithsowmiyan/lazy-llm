@@ -70,17 +70,23 @@ def WARM_FEW_API(i: data, args, method = 'LLMExtra'):
         best = clone(i, done[:cut]).rows
         rest = clone(i, done[cut:]).rows
 
-        best = best[:len(i.cols.x)]
-        rest = rest[:len(i.cols.x)]
+        best = [b[:len(i.cols.x)] for b in best]
+        rest = [r[:len(i.cols.x)] for r in rest]
+        #print(best)
+        #print(rest)
 
         mean_best = calculate_mean(best)
         mean_rest = calculate_mean(rest)
         
         difference = [mean_best[idx] - mean_rest[idx] for idx in range(len(mean_best))]
-        better_examples = [[b[idx] + scale * difference[idx]  for idx in range(len(b))] for b in best]
-        worse_examples = [[r[idx] - scale * difference[idx]  for idx in range(len(r))] for r in rest]
+        better_examples = [[b[idx] + scale * difference[idx]  
+        if i.cols.x[idx].this == NUM else b[idx]
+        for idx in range(len(b))] for b in best]
+        worse_examples = [[r[idx] - scale * difference[idx]  
+        if i.cols.x[idx].this == NUM else r[idx]
+        for idx in range(len(r))] for r in rest]
         
-        return better_examples + worse_examples 
+        return better_examples + worse_examples  
 
 
     def _synthesise(done: rows):
@@ -97,7 +103,7 @@ def WARM_FEW_API(i: data, args, method = 'LLMExtra'):
         result = model.invoke(messages).content
         
         best, rest = _markdown_to_rows(result)
-        #print(best, rest)
+        #print(best, rest) 
 
         return best + rest 
         
