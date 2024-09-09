@@ -211,18 +211,21 @@ def warms(args):
             btw(".")
             rxs[rx].add(d2h(d,smo(d,how)[0]))
         btw("\n")
-      '''
+      
       for  guessFaster in [True]:
-        for what,how in  scoring_policies:
-          the.GuessFaster = guessFaster
-          rx=f"warm4/{what},{the.Last}"
-          rxs[rx] = SOME(txt=rx)
-          for _ in range(repeats):
-             btw(".")
-             time.sleep(10)
-             rxs[rx].add(d2h(d,warm_smo(args,how)[0]))
-          btw("\n")
-       '''
+        for start in ['LINExtra', 'LLMExtra']:
+            for what,how in  scoring_policies:
+                the.GuessFaster = guessFaster
+                rx=f"{start}/{what},{the.Last}"
+                rxs[rx] = SOME(txt=rx)
+                for _ in range(repeats):
+                    btw(".")
+                    time.sleep(10)
+                    if start == 'LLMExtra' and len(d.rows) < 300: # this heuristic works because LLM warm start performs poorly across all small datasets
+                        rxs[rx].add(d2h(d,smo(d,how)[0]))
+                    else : rxs[rx].add(d2h(d,warm_smo(args,how,method = start)[0]))
+            btw("\n")
+       
 
 
       

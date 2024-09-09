@@ -9,7 +9,7 @@ import warnings
 import json
 import time
 
-def WARM_FEW_API(i: data, args):
+def WARM_FEW_API(i: data, args, method = 'LLMExtra'):
 
     def calculate_mean(example_list):
         "Calculate the mean of a list of rows"
@@ -103,7 +103,7 @@ def WARM_FEW_API(i: data, args):
         
     def n_examples(todo:rows, done:rows):
         "get the 4 start samples ready for active learning"
-        results = _synthesise(done)
+        results = _synthesise(done) if method == 'LLMExtra' else linear_extrapolation(done)
 
         x_size = len(i.cols.x)
         new_done = []
@@ -122,12 +122,11 @@ def WARM_FEW_API(i: data, args):
 
 
 
-def warm_smo(args, score=lambda B,R,I,N: B-R, callBack=lambda x:x):
+def warm_smo(args, score=lambda B,R,I,N: B-R, method ='LLMExtra'):
   "Sequential model optimization."
   def _ranked(lst:rows) -> rows:
     "Sort `lst` by distance to heaven. Called by `_smo1()`."
     lst = sorted(lst, key = lambda r:d2h(i,r))
-    callBack([d2h(i,r) for r in lst])
     return lst
 
   def _guess(todo:rows, done:rows) -> rows:
@@ -159,9 +158,9 @@ def warm_smo(args, score=lambda B,R,I,N: B-R, callBack=lambda x:x):
   # remove any  bias from older runs
   most = []
   i = DATA(csv(args.dataset))
-  done, new_done ,todo = WARM_FEW_API(i, args)
+  done, new_done ,todo = WARM_FEW_API(i, args, method = method)
   results, most =  _smo1(todo, _ranked(new_done), most)
-  if(True):
+  if(False):
         time.sleep(5)
         visualize2(
         i, 
