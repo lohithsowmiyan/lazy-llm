@@ -11,6 +11,7 @@ from src.models.few import FEW
 from src.models.smo import SMO
 from src.models.zero import ZERO
 from src.models.warm_start import warm_smo
+from src.models.ucb import ucbs
 
 
 def explore(B, R):
@@ -193,6 +194,14 @@ def warms(args):
       rx=f"random,{last}"
       rxs[rx] = SOME(txt=rx, inits=[d2h(d,guess()) for _ in range(repeats)])
 
+      for guesFaster in [True]:
+        rx = f"UCB_GPM,{the.Last}"
+        rxs[rx] = SOME(txt=rx)
+        for _ in range(repeats):
+            btw(".")
+            rxs[rx].add(d2h(d, ucbs(args)[0]))
+        btw("\n")
+
       for  guessFaster in [True]:
         for what,how in  scoring_policies:
           the.GuessFaster = guessFaster
@@ -202,7 +211,7 @@ def warms(args):
             btw(".")
             rxs[rx].add(d2h(d,smo(d,how)[0]))
         btw("\n")
-
+      '''
       for  guessFaster in [True]:
         for what,how in  scoring_policies:
           the.GuessFaster = guessFaster
@@ -213,6 +222,7 @@ def warms(args):
              time.sleep(10)
              rxs[rx].add(d2h(d,warm_smo(args,how)[0]))
           btw("\n")
+       '''
 
 
       
