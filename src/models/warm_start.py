@@ -166,16 +166,7 @@ def warm_smo(args, score=lambda B,R,I,N: B-R, method ='LLM'):
   i = DATA(csv(args.dataset))
   done, new_done ,todo = WARM_FEW_API(i, args, method = method)
   results, most =  _smo1(todo, _ranked(new_done), most)
-  if(False):
-        time.sleep(5)
-        visualize2(
-        i, 
-        [most], 
-        new_done[:2], 
-        new_done[2:], 
-        results, 
-        policy='warm_explore'
-        )
-  return results
+  
+  return results, [i, [most], new_done[:2], new_done[2:], results]
 
     

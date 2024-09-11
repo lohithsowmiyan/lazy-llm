@@ -4,7 +4,7 @@ from src.language import load_model
 from dotenv import load_dotenv
 from src.prompts import load_prompt
 from src.utils.results import save_results_txt
-from graph import visualize 
+from graph import visualize,visualize2 
 import warnings
 import time
 from src.models.few import FEW
@@ -188,12 +188,12 @@ def warms(args):
         #('ExpProgressive', lambda B, R, I, N: m(I, N, 0) * exploit(B,R) + (1 - m(I, N, 0)) * explore(B,R))
     ]
     
-    for last in [20,25,30]:
+    for last in [20]:
       the.Last= last
       guess = lambda : clone(d,random.choices(d.rows, k=last),rank=True).rows[0]
       rx=f"random,{last}"
       rxs[rx] = SOME(txt=rx, inits=[d2h(d,guess()) for _ in range(repeats)])
-
+      '''
       for guesFaster in [True]:
         rx = f"UCB_GPM,{the.Last}"
         rxs[rx] = SOME(txt=rx)
@@ -201,6 +201,8 @@ def warms(args):
             btw(".")
             rxs[rx].add(d2h(d, ucbs(args)[0]))
         btw("\n")
+      '''
+      graphs = {'exploit' : [], 'LINEAR/exploit' : []}
 
       for  guessFaster in [True]:
         for what,how in  scoring_policies:
@@ -209,11 +211,13 @@ def warms(args):
           rxs[rx] = SOME(txt=rx)
           for _ in range(repeats):
             btw(".")
-            rxs[rx].add(d2h(d,smo(d,how)[0]))
+            res,data = smo(d,how)
+            rxs[rx].add(d2h(d,res[0]))
+            if last == 20 and what in graphs.keys() : graphs[what].append(data)
         btw("\n")
       
       for  guessFaster in [True]:
-        for start in ['LINEAR', 'LLM']:
+        for start in ['LINEAR']:
             for what,how in  scoring_policies:
                 the.GuessFaster = guessFaster
                 rx=f"{start}/{what},{the.Last}"
@@ -221,17 +225,20 @@ def warms(args):
                 for _ in range(repeats):
                     btw(".")
                     #time.sleep(10)
-                    if start == 'LLM' and len(d.rows) < 200: # this heuristic works because LLM warm start performs poorly across all small datasets
-                        rxs[rx].add(d2h(d,smo(d,how)[0]))
-                    else : rxs[rx].add(d2h(d,warm_smo(args,how,method = start)[0]))
+                    if start == 'LLM' and len(d.rows) < 200:
+                        res,data = smo(d,how) # this heuristic works because LLM warm start performs poorly across all small datasets
+                        rxs[rx].add(d2h(d,res[0]))
+                    else :
+                        res, data = warm_smo(args,how,method = start)
+                        rxs[rx].add(d2h(d,res[0]))
+                    if last == 20 and f'{start}/{what}' in graphs.keys(): graphs[f'{start}/{what}'].append(data)
             btw("\n")
 
-            
-       
 
-
-      
     report(rxs.values())
+    for n, _ in graphs.items():
+        print(n, len(_))
+    visualize2(args.dataset, graphs)
 
 
     

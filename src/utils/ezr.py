@@ -509,18 +509,22 @@ def smo(i:data, score=lambda B,R,I,N: B-R, callBack=lambda x:x ):
 
     #return sorted(todo,key=key,reverse=True)
 
-  def _smo1(todo:rows, done:rows) -> rows:
+  def _smo1(todo:rows, done:rows, most) -> rows:
     "Guess the `top`  unlabeled row, add that to `done`, resort `done`, and repeat"
     for k in range(the.Last - the.label):
       if len(todo) < 3: break
       top,*todo = _guess(todo, done)
+      most = top if  most ==[] or d2h(i,top) < d2h(i,most) else most
       #print(d2h(i,top))
       done += [top]
       done = _ranked(done)
-    return done
+    return done,most
 
-  random.shuffle(i.rows) # remove any  bias from older runs
-  return _smo1(i.rows[the.label:], _ranked(i.rows[:the.label]))
+  random.shuffle(i.rows)
+  most = [] # remove any  bias from older runs
+  initial = _ranked(i.rows[:the.label])
+  done,most = _smo1(i.rows[the.label:],initial, most)
+  return done, [i, [most], initial[:2], initial[2:], done]
 
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------

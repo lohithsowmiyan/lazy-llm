@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 from src.utils.pca import PCA
+import random
 
 def visualize(path = './output/', folder = 'single_run/' , dataset = 'auto93', show = 'All' , save_fig = False, display = False):
     data_list = []
@@ -78,44 +79,54 @@ def visualize(path = './output/', folder = 'single_run/' , dataset = 'auto93', s
             os.remove(f"{path}img/{dataset}_temp.png")
 
 
-def visualize2(i, most, best, rest , done, policy):
+def visualize2(dataset: str, graphs):
 
-    i_pca, eigenvectors = PCA(i.rows)
-    # Transform `most` and `done` using the same PCA transformation
-    most_meaned = most - np.mean(i.rows, axis=0)  # Center `most` using mean of `i`
-    done_meaned = done - np.mean(i.rows, axis=0)  # Center `done` using mean of `i`
-    best_meaned = best - np.mean(i.rows, axis=0)
-    rest_meaned = rest - np.mean(i.rows, axis=0)
+    num_policies = len(graphs)
+    num_samples = 5
 
-    most_pca = np.dot(most_meaned, eigenvectors)
-    done_pca = np.dot(done_meaned, eigenvectors)
-    best_pca = np.dot(best_meaned, eigenvectors)
-    rest_pca = np.dot(rest_meaned, eigenvectors)
+    # Create a figure with subplots arranged in a grid
+    fig, axs = plt.subplots(num_samples, num_policies, figsize=(4 * num_policies, 4 * num_samples))
+    for col_idx, (policy, data) in enumerate(graphs.items()):
+        sampled_data = random.sample(data, k=num_samples)
+        for row_idx, d in enumerate(sampled_data):
+            [i, most, best, rest, done] = d
+            # Perform PCA on i.rows
+            i_pca, eigenvectors = PCA(i.rows)
+            print(most)
+            most_meaned = most - np.mean(i.rows, axis=0)  # Center `most` using mean of `i`
+            done_meaned = done - np.mean(i.rows, axis=0)  # Center `done` using mean of `i`
+            best_meaned = best - np.mean(i.rows, axis=0)
+            rest_meaned = rest - np.mean(i.rows, axis=0)
+            # Transform `most`, `done`, `best`, and `rest` using the PCA transformation
 
-    plt.figure(figsize=(8, 6))
-
-    # Scatter plot for `i`
-    plt.scatter(i_pca[:, 0], i_pca[:, 1], color='gray', label='i', alpha=0.5)
-    plt.scatter(done_pca[:, 0], done_pca[:, 1], color='black', label='done', alpha=0.8)
-    # Scatter plot for `most`
-    plt.scatter(most_pca[:, 0], most_pca[:, 1], color='green', label='most', alpha=0.8)
-
-    plt.scatter(best_pca[:, 0], best_pca[:, 1], color='blue', label='initial best', alpha=0.8)
-
-    plt.scatter(rest_pca[:, 0], rest_pca[:, 1], color='red', label='initial rest', alpha=0.2)
-
-    # Scatter plot for `done`
-   
-
-    # Adding labels and title
-    plt.xlabel('Principal Component 1')
-    plt.ylabel('Principal Component 2')
-    plt.title(f'{policy}')
-    plt.legend()
-
+            most_pca = np.dot(most_meaned, eigenvectors)
+            done_pca = np.dot(done_meaned, eigenvectors)
+            best_pca = np.dot(best_meaned, eigenvectors)
+            rest_pca = np.dot(rest_meaned, eigenvectors)
+            # Select the correct subplot
+            ax = axs[row_idx, col_idx]
+            # Scatter plots
+            ax.scatter(i_pca[:, 0], i_pca[:, 1], color='gray', label='i', alpha=0.5)
+            ax.scatter(done_pca[:, 0], done_pca[:, 1], color='black', label='done', alpha=0.8)
+            ax.scatter(most_pca[:, 0], most_pca[:, 1], color='green', label='most', alpha=0.8)
+            ax.scatter(best_pca[:, 0], best_pca[:, 1], color='blue', label='initial best', alpha=0.8)
+            ax.scatter(rest_pca[:, 0], rest_pca[:, 1], color='red', label='initial rest', alpha=0.2)
+            # Labels and title
+            if row_idx == 0:  # Only add title on the top row
+                ax.set_title(f'{policy}', fontsize=12)
+            if col_idx == 0:  # Only add y-axis label on the first column
+                ax.set_ylabel('Principal Component 2')
+            ax.set_xlabel('Principal Component 1')
+            ax.legend(loc='upper right', fontsize='small')
+    # Adjust layout to make room for labels and titles
+    plt.tight_layout()
+    # Save the figure
+    os.makedirs('output/img/warms', exist_ok=True)
+    dataset = dataset[dataset.rfind('/')+1:-4]
+    plt.savefig(f'output/img/warms/{dataset}.png')
     # Show the plot
-    plt.show()
-    plt.savefig('output/img/warms.png')
+    plt.show() 
+
 
 
 
