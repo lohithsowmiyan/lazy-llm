@@ -202,7 +202,7 @@ def warms(args):
             rxs[rx].add(d2h(d, ucbs(args)[0]))
         btw("\n")
       '''
-      graphs = {'exploit' : [], 'LINEAR/exploit' : []}
+      graphs = {'exploit' : [], 'LINEAR/exploit' : [], 'LLM/exploit' : []}
 
       for  guessFaster in [True]:
         for what,how in  scoring_policies:
@@ -217,7 +217,7 @@ def warms(args):
         btw("\n")
       
       for  guessFaster in [True]:
-        for start in ['LINEAR']:
+        for start in ['LINEAR','LLM']:
             for what,how in  scoring_policies:
                 the.GuessFaster = guessFaster
                 rx=f"{start}/{what},{the.Last}"
@@ -225,7 +225,7 @@ def warms(args):
                 for _ in range(repeats):
                     btw(".")
                     #time.sleep(10)
-                    if start == 'LLM' and len(d.rows) < 200:
+                    if start == 'LLM' and len(d.rows) < 50:
                         res,data = smo(d,how) # this heuristic works because LLM warm start performs poorly across all small datasets
                         rxs[rx].add(d2h(d,res[0]))
                     else :

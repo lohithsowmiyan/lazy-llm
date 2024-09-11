@@ -1,4 +1,4 @@
-from src.utils.ezr import o
+from src.utils.ezr import o,d2h
 import csv
 import os
 import sys
@@ -90,27 +90,42 @@ def visualize2(dataset: str, graphs):
         sampled_data = random.sample(data, k=num_samples)
         for row_idx, d in enumerate(sampled_data):
             [i, most, best, rest, done] = d
+            s = sorted(i.rows, key = lambda r : d2h(i,r))
+            n = len(i.rows)
+            bottom_5th_index = int(0.05 * n)
+            top_5th_index = int(0.95 * n)
+
+            top = s[:bottom_5th_index]  # Bottom 5% of the points
+            bottom = s[top_5th_index:]
+            
             # Perform PCA on i.rows
             i_pca, eigenvectors = PCA(i.rows)
-            print(most)
+            
             most_meaned = most - np.mean(i.rows, axis=0)  # Center `most` using mean of `i`
             done_meaned = done - np.mean(i.rows, axis=0)  # Center `done` using mean of `i`
             best_meaned = best - np.mean(i.rows, axis=0)
             rest_meaned = rest - np.mean(i.rows, axis=0)
+            top_meaned = top - np.mean(i.rows, axis=0)
+            bottom_meaned = bottom - np.mean(i.rows, axis=0)
             # Transform `most`, `done`, `best`, and `rest` using the PCA transformation
 
             most_pca = np.dot(most_meaned, eigenvectors)
             done_pca = np.dot(done_meaned, eigenvectors)
             best_pca = np.dot(best_meaned, eigenvectors)
             rest_pca = np.dot(rest_meaned, eigenvectors)
+            top_pca = np.dot(top_meaned, eigenvectors)
+            bottom_pca = np.dot(bottom_meaned, eigenvectors)
+
             # Select the correct subplot
             ax = axs[row_idx, col_idx]
             # Scatter plots
             ax.scatter(i_pca[:, 0], i_pca[:, 1], color='gray', label='i', alpha=0.5)
+            ax.scatter(top_pca[:, 0], top_pca[:, 1], color = 'green', label = 'best', alpha = 0.5)
+            ax.scatter(bottom_pca[:, 0], bottom_pca[:, 1], color = 'orange', label = 'rest', alpha = 0.5)
             ax.scatter(done_pca[:, 0], done_pca[:, 1], color='black', label='done', alpha=0.8)
-            ax.scatter(most_pca[:, 0], most_pca[:, 1], color='green', label='most', alpha=0.8)
-            ax.scatter(best_pca[:, 0], best_pca[:, 1], color='blue', label='initial best', alpha=0.8)
-            ax.scatter(rest_pca[:, 0], rest_pca[:, 1], color='red', label='initial rest', alpha=0.2)
+            ax.scatter(most_pca[:, 0], most_pca[:, 1], color='yellow', marker = "v", label='most', alpha=1)
+            ax.scatter(best_pca[:, 0], best_pca[:, 1], color='blue',marker = "v", label='initial best', alpha=1)
+            ax.scatter(rest_pca[:, 0], rest_pca[:, 1], color='red', marker = "v", label='initial rest', alpha=1)
             # Labels and title
             if row_idx == 0:  # Only add title on the top row
                 ax.set_title(f'{policy}', fontsize=12)
