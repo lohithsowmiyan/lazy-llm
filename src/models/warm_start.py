@@ -5,6 +5,7 @@ from src.prompts import load_prompt
 from src.utils.results import save_results_txt
 from graph import visualize2 
 from src.prompts.synthetic import SYNTHETIC
+from statistics import mode
 import warnings
 import json
 import time
@@ -24,6 +25,24 @@ def WARM_FEW_API(i: data, args, method = 'LLMExtra'):
         
         mean = [x / n_examples for x in mean]
         return mean
+
+    def calculate_mean_or_mode(example_list, is_numeric):
+        "Calculate the mean for numeric columns and mode for symbolic columns."
+        n_features = len(example_list[0])
+        
+        result = [0] * n_features
+        for i in range(n_features):
+            column = [example[i] for example in example_list if example[i] != '?']  # Ignore missing values
+            if len(column) == 0:  # If all values in the column are missing
+                result[i] = '?'  # Handle case where all values are missing
+                continue
+
+            if is_numeric[i] == 1:  # If the column is numeric
+                column = list(map(float, column))  # Convert to float
+                result[i] = sum(column) / len(column)
+            elif is_numeric[i] == 0:  # If the column is symbolic
+                result[i] = mode(column) if column else '?'  # Use mode for symbolic data
+        return result
     
     def _ranked(lst:rows, cur:row = None) -> rows:
         "Sort `lst` by distance to heaven. Called by `_smo1()`."
@@ -63,30 +82,81 @@ def WARM_FEW_API(i: data, args, method = 'LLMExtra'):
         
         return best,rest
 
-    def linear_extrapolation(done, scale=0.5):
-        "Perform linear extrapolation to generate better and worse examples."
-
+    def linear_extrapolation( done, scale=0.5):
+        """Perform linear extrapolation to generate better and worse examples."""
+        
         cut = int(.5 + len(done) ** 0.5)
         best = clone(i, done[:cut]).rows
         rest = clone(i, done[cut:]).rows
 
-        best = [b[:len(i.cols.x)] for b in best]
-        rest = [r[:len(i.cols.x)] for r in rest]
-        #print(best)
-        #print(rest)
+        dff = 0
 
-        mean_best = calculate_mean(best)
-        mean_rest = calculate_mean(rest)
+        if(len(i.cols.names) != len(i.cols.x) + len(i.cols.y)):
+            dff = len(i.cols.names)  - len(i.cols.x) - len(i.cols.y)
+
+        best = [b[:len(i.cols.x) + dff] for b in best]
+        rest = [r[:len(i.cols.x) + dff] for r in rest]
+
+        # Check if each column is numeric or symbolic
+        is_numeric = [0] * len(best[0])
+
+
+        find = lambda col, i: next((c for c in i.cols.x if c.txt == col), None)
+
+        names = i.cols.names[:len(i.cols.x) + dff]
+
+        for _, col in enumerate(names):
+            if col in [x.txt for x in i.cols.x]:
+                c = find(col, i)
+                is_numeric[_] = 1 if c.this == NUM else 0
+            else:
+                is_numeric[_] = 2
+
+        # Calculate mean for numeric columns and mode for symbolic ones
+        mean_best = calculate_mean_or_mode(best, is_numeric)
+        mean_rest = calculate_mean_or_mode(rest, is_numeric)
+
+        # Generate better and worse examples based on column type
+        better_examples = [
+            [
+                float(b[idx] + scale * (mean_best[idx] - mean_rest[idx])) if is_numeric[idx] == 1 and b[idx] != '?' else mean_best[idx]
+                for idx in range(len(b))
+            ] for b in best
+        ]
+        worse_examples = [
+            [
+                float(r[idx] - scale * (mean_best[idx] - mean_rest[idx])) if is_numeric[idx] == 1 and r[idx] != '?' else mean_rest[idx]
+                for idx in range(len(r))
+            ] for r in rest
+        ]
+
+
+        return better_examples + worse_examples
+
+    # def linear_extrapolation(done, scale=0.5):
+    #     "Perform linear extrapolation to generate better and worse examples."
+
+    #     cut = int(.5 + len(done) ** 0.5)
+    #     best = clone(i, done[:cut]).rows
+    #     rest = clone(i, done[cut:]).rows
+
+    #     best = [b[:len(i.cols.x)] for b in best]
+    #     rest = [r[:len(i.cols.x)] for r in rest]
+    #     #print(best)
+    #     #print(rest)
+
+    #     mean_best = calculate_mean(best)
+    #     mean_rest = calculate_mean(rest)
         
-        difference = [mean_best[idx] - mean_rest[idx] for idx in range(len(mean_best))]
-        better_examples = [[b[idx] + scale * difference[idx]  
-        if i.cols.x[idx].this == NUM else b[idx]
-        for idx in range(len(b))] for b in best]
-        worse_examples = [[r[idx] - scale * difference[idx]  
-        if i.cols.x[idx].this == NUM else r[idx]
-        for idx in range(len(r))] for r in rest]
+    #     difference = [mean_best[idx] - mean_rest[idx] for idx in range(len(mean_best))]
+    #     better_examples = [[b[idx] + scale * difference[idx]  
+    #     if i.cols.x[idx].this == NUM else b[idx]
+    #     for idx in range(len(b))] for b in best]
+    #     worse_examples = [[r[idx] - scale * difference[idx]  
+    #     if i.cols.x[idx].this == NUM else r[idx]
+    #     for idx in range(len(r))] for r in rest]
         
-        return better_examples + worse_examples  
+    #     return better_examples + worse_examples  
 
 
     def _synthesise(done: rows):
@@ -111,7 +181,13 @@ def WARM_FEW_API(i: data, args, method = 'LLMExtra'):
         "get the 4 start samples ready for active learning"
         results = _synthesise(done) if method == 'LLM' else linear_extrapolation(done)
 
-        x_size = len(i.cols.x)
+        dff = 0
+
+        if(len(i.cols.names) != len(i.cols.x) + len(i.cols.y)):
+            dff = len(i.cols.names)  - len(i.cols.x) - len(i.cols.y)
+
+        x_size = len(i.cols.x) + dff
+
         new_done = []
         for record in results:
             random.shuffle(todo)
