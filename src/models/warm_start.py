@@ -167,8 +167,10 @@ def WARM_FEW_API(i: data, args, method = 'LLMExtra'):
         best = clone(i, done[:cut]).rows
         rest = clone(i, done[cut:]).rows
 
+        
+
         sythetic = SYNTHETIC(i, best, rest)
-        messages = sythetic.get_template_correlation()
+        messages = sythetic.get_template_markdown()
       
         result = model.invoke(messages).content
         

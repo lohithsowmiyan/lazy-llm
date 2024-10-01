@@ -174,11 +174,11 @@ def warms(args):
     d = DATA(csv(args.dataset))
     e = math.exp(1)
     rxs={}
-    rxs["baseline"] = SOME(txt=f"baseline,{len(d.rows)}",inits=[d2h(d,row) for row in d.rows])
+    rxs["baseline"] = SOME(txt=f"baseline,{len(d.rows)}",inits=[chebyshev(d,row) for row in d.rows])
     rx=f"rrp,{int(0.5+math.log(len(d.rows),2)+1)}"
     rxs[rx] = SOME(txt=rx)
     for _ in range(repeats):
-        best,_,_ = branch(d,d.rows,4); rxs[rx].add(d2h(d,best[0]))
+        best,_,_ = branch(d,d.rows,4); rxs[rx].add(chebyshev(d,best[0]))
 
     scoring_policies = [
         ('exploit', lambda B, R, I, N: exploit(B, R)),
@@ -192,7 +192,7 @@ def warms(args):
       the.Last= last
       guess = lambda : clone(d,random.choices(d.rows, k=last),rank=True).rows[0]
       rx=f"random,{last}"
-      rxs[rx] = SOME(txt=rx, inits=[d2h(d,guess()) for _ in range(repeats)])
+      rxs[rx] = SOME(txt=rx, inits=[chebyshev(d,guess()) for _ in range(repeats)])
       '''
       for guesFaster in [True]:
         rx = f"UCB_GPM,{the.Last}"
@@ -212,7 +212,7 @@ def warms(args):
           for _ in range(repeats):
             btw(".")
             res,data = smo(d,how)
-            rxs[rx].add(d2h(d,res[0]))
+            rxs[rx].add(chebyshev(d,res[0]))
             if last == 20 and what in graphs.keys() : graphs[what].append(data)
         btw("\n")
       
@@ -227,18 +227,21 @@ def warms(args):
                     #time.sleep(10)
                     if start == 'LLM' and len(d.rows) < 50:
                         res,data = smo(d,how) # this heuristic works because LLM warm start performs poorly across all small datasets
-                        rxs[rx].add(d2h(d,res[0]))
+                        rxs[rx].add(chebyshev(d,res[0]))
                     else :
                         res, data = warm_smo(args,how,method = start)
-                        rxs[rx].add(d2h(d,res[0]))
+                        rxs[rx].add(chebyshev(d,res[0]))
                     if last == 20 and f'{start}/{what}' in graphs.keys(): graphs[f'{start}/{what}'].append(data)
             btw("\n")
 
 
     report(rxs.values())
-    for n, _ in graphs.items():
-        print(n, len(_))
-    visualize2(args.dataset, graphs)
+
+    if args.graph:
+        "plot the graph depending on the config"
+        for n, _ in graphs.items():
+            print(n, len(_))
+        visualize2(args.dataset, graphs)
 
 
     

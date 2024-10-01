@@ -372,6 +372,11 @@ def d2h(i:data, r:row) -> float:
   n = sum(abs(norm(num,r[num.at]) - num.maximize)**the.p for num in i.cols.y)
   return (n / len(i.cols.y))**(1/the.p)
 
+def chebyshev(i:data, r:row) -> float:
+  "chebyshev distance (which is the maximum distance of the y vals to the best values)."
+  n = max(abs(norm(num, r[num.at]) - num.maximize) for num in i.cols.y)
+  return n
+
 def dists(i:data, r1:row, r2:row) -> float:
   "Distances between two rows."
   n = sum(dist(c, r1[c.at], r2[c.at])**the.p for c in i.cols.x)

@@ -30,8 +30,16 @@ class SYNTHETIC():
         SYM : 'SYMBOL'
         }
         self.i = i
-        self.best = best
-        self.rest = rest
+        self.dff = 0
+
+        if(len(i.cols.names) != len(i.cols.x) + len(i.cols.y)):
+            self.dff = len(i.cols.names)  - len(i.cols.x) - len(i.cols.y)
+
+        self.best = [b[:len(i.cols.x) + self.dff] for b in best]
+        self.rest = [r[:len(i.cols.x) + self.dff] for r in rest]
+
+        self.col_names = i.cols.names
+    
         self.Features = [
         f'Feature {col.at + 1} : (name : {col.txt}, type : {self.meta[col.this]}, range : [{col.lo} - {col.hi}])'
         if col.this == NUM
@@ -148,7 +156,7 @@ class SYNTHETIC():
 
     def get_template_markdown(self):
 
-        table = [[col.txt for col in self.i.cols.x] + ['Class']] + [b[:self.x] + ['Best'] for b in self.best] + [r[:self.x] + ['Rest'] for r in self.rest]
+        table = [[col for col in self.i.cols.names[:self.x + self.dff]] + ['Class']] + [b + ['Best'] for b in self.best] + [r + ['Rest'] for r in self.rest]
 
         headers = ['S.No', 'Name', 'Type', 'Lowest', 'Highest', 'Unique']
 
@@ -185,7 +193,7 @@ class SYNTHETIC():
 
     def get_template_correlation(self):
 
-        table = [[col.txt for col in self.i.cols.x] + ['Class']] + [b[:self.x] + ['Best'] for b in self.best] + [r[:self.x] + ['Rest'] for r in self.rest]
+        table = [[col.txt for col in self.i.cols.x] + ['Class']] + [b + ['Best'] for b in self.best] + [r + ['Rest'] for r in self.rest]
 
         headers = ['S.No', 'Name', 'Type', 'Lowest', 'Highest', 'Unique']
 

@@ -10,6 +10,7 @@ def parse_arguments():
 
     #Explanation
     parser.add_argument('--intermediate', type = bool, default = False, help = "show llm output for each step True/ False")
+    parser.add_argument('--graph', type = bool, default = False, help = "plot the graph of predictions for the dataset True/ False")
     
      
     #LLM Configurations
