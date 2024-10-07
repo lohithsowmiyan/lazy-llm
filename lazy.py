@@ -11,7 +11,7 @@ from src.models.few import FEW
 from src.models.smo import SMO
 from src.models.zero import ZERO
 from src.models.warm_start import warm_smo
-from src.models.ucb import ucbs
+from src.models.gpm import ucbs,pis,eis
 
 
 def explore(B, R):
@@ -193,15 +193,17 @@ def warms(args):
       guess = lambda : clone(d,random.choices(d.rows, k=last),rank=True).rows[0]
       rx=f"random,{last}"
       rxs[rx] = SOME(txt=rx, inits=[chebyshev(d,guess()) for _ in range(repeats)])
-      '''
+      
+      gps = [('UCB_GPM', ucbs(args)), ('PI_GPM', pis(args)), ('EI_GPM', eis(args))]
       for guesFaster in [True]:
-        rx = f"UCB_GPM,{the.Last}"
-        rxs[rx] = SOME(txt=rx)
-        for _ in range(repeats):
-            btw(".")
-            rxs[rx].add(d2h(d, ucbs(args)[0]))
-        btw("\n")
-      '''
+        for what, how in gps:
+            rx = f"{what},{the.Last}"
+            rxs[rx] = SOME(txt=rx)
+            for _ in range(repeats):
+                btw(".")
+                rxs[rx].add(d2h(d, how[0]))
+            btw("\n")
+      
       graphs = {'exploit' : [], 'LINEAR/exploit' : [], 'LLM/exploit' : []}
 
       for  guessFaster in [True]:
@@ -215,6 +217,8 @@ def warms(args):
             rxs[rx].add(chebyshev(d,res[0]))
             if last == 20 and what in graphs.keys() : graphs[what].append(data)
         btw("\n")
+
+      '''  
       
       for  guessFaster in [True]:
         for start in ['LINEAR','LLM']:
@@ -233,6 +237,8 @@ def warms(args):
                         rxs[rx].add(chebyshev(d,res[0]))
                     if last == 20 and f'{start}/{what}' in graphs.keys(): graphs[f'{start}/{what}'].append(data)
             btw("\n")
+
+       '''
 
 
     report(rxs.values())
