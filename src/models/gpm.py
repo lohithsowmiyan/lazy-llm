@@ -44,12 +44,14 @@ def _UCB_GPM(i, todo, done):
     gp.optimizer = custom_optimizer
     
     def update_gp_model(done_set):
-        X_done = np.array([x for x in done_set], dtype=object)
+
+        X_done = np.array([x[:len(i.cols.x)] for x in done_set], dtype=object)
         y_done = np.array([-d2h(i, x) for x in done_set])
         X_done_transformed = pipeline.fit_transform(X_done)
         gp.fit(X_done_transformed, y_done)
     
     def ucb(x, kappa=2.576):
+        x = x[:len(i.cols.x)]
         x = np.array(x).reshape(1, -1).astype(object)
         x_transformed = pipeline.transform(x)
         mean, std = gp.predict(x_transformed, return_std=True)
@@ -65,7 +67,8 @@ def _UCB_GPM(i, todo, done):
         best_candidate = todo.pop(best_idx)
          
         done.append(best_candidate)
-    
+
+    print(len(done))
     return sorted(done, key = lambda r:d2h(i,r))
 
 def _PI_GPM(i, todo, done, xi=0.01):
@@ -102,13 +105,14 @@ def _PI_GPM(i, todo, done, xi=0.01):
     
     # Update Gaussian Process model with the `done` set
     def update_gp_model(done_set):
-        X_done = np.array([x for x in done_set], dtype=object)
+        X_done = np.array([x[:len(i.cols.x)]for x in done_set], dtype=object)
         y_done = np.array([-d2h(i, x) for x in done_set])  # Using -d2h as the target
         X_done_transformed = pipeline.fit_transform(X_done)
         gp.fit(X_done_transformed, y_done)
     
     # Probabilistic Improvement (PI) acquisition function
     def pi(x, y_max, xi=xi):
+        x = x[:len(i.cols.x)]
         x = np.array(x).reshape(1, -1).astype(object)
         x_transformed = pipeline.transform(x)
         mean, std = gp.predict(x_transformed, return_std=True)
@@ -168,13 +172,14 @@ def _EI_GPM(i, todo, done, xi=0.01):
     
     # Update Gaussian Process model with the `done` set
     def update_gp_model(done_set):
-        X_done = np.array([x for x in done_set], dtype=object)
+        X_done = np.array([x[:len(i.cols.x)] for x in done_set], dtype=object)
         y_done = np.array([-d2h(i, x) for x in done_set])  # Using -d2h as the target
         X_done_transformed = pipeline.fit_transform(X_done)
         gp.fit(X_done_transformed, y_done)
     
     # Expected Improvement (EI) acquisition function
     def ei(x, y_max, xi=xi):
+        x = x[:len(i.cols.x)]
         x = np.array(x).reshape(1, -1).astype(object)
         x_transformed = pipeline.transform(x)
         mean, std = gp.predict(x_transformed, return_std=True)
