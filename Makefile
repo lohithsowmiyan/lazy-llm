@@ -125,10 +125,10 @@ DEMOS = $(patsubst data/config/%,$(shell echo var/out/warms/%),$(FILES))
        
 # Pattern rules for processing files from different source directories
 var/out/warms/%.csv : data/config/%.csv
-	@echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
+	@echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< 
 # Target to create output directory and process the files
 demo:
-	mkdir -p var/out/warms
+	
 	$(MAKE) -j $(DEMOS)
 	git add $(OUTPUT_FILE)
 	git commit -m "$(GIT_MESSAGE)"

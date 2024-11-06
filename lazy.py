@@ -188,7 +188,7 @@ def warms(args):
         #('ExpProgressive', lambda B, R, I, N: m(I, N, 0) * exploit(B,R) + (1 - m(I, N, 0)) * explore(B,R))
     ]
     
-    for last in [20]:
+    for last in [20,25,30]:
       the.Last= last
       guess = lambda : clone(d,random.choices(d.rows, k=last),rank=True).rows[0]
       rx=f"random,{last}"
@@ -218,10 +218,10 @@ def warms(args):
             if last == 20 and what in graphs.keys() : graphs[what].append(data)
         btw("\n")
 
-      '''  
+      
       
       for  guessFaster in [True]:
-        for start in ['LINEAR','LLM']:
+        for start in ['LLM']:
             for what,how in  scoring_policies:
                 the.GuessFaster = guessFaster
                 rx=f"{start}/{what},{the.Last}"
@@ -238,7 +238,7 @@ def warms(args):
                     if last == 20 and f'{start}/{what}' in graphs.keys(): graphs[f'{start}/{what}'].append(data)
             btw("\n")
 
-       '''
+       
 
 
     report(rxs.values())
