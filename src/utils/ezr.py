@@ -98,7 +98,7 @@ def _COLS(names: list[str]) -> cols:
   return o(this=COLS, x=[], y=[], all=[], klass=None, names=names)
 
 def SYM(txt=" ",at=0) -> sym:  
-  "SYM columns incrementally summarizes a stream of symbols."
+  "SYM columns incrementally summarizes a stream of symbols." 
   return o(this=SYM, txt=txt, at=at, n=0, has={})
 
 def NUM(txt=" ",at=0,has=None) -> num:  
@@ -372,6 +372,11 @@ def d2h(i:data, r:row) -> float:
   n = sum(abs(norm(num,r[num.at]) - num.maximize)**the.p for num in i.cols.y)
   return (n / len(i.cols.y))**(1/the.p)
 
+def chebyshev(i:data, r:row) -> float:
+  "chebyshev distance (which is the maximum distance of the y vals to the best values)."
+  n = max(abs(norm(num, r[num.at]) - num.maximize) for num in i.cols.y)
+  return n
+
 def dists(i:data, r1:row, r2:row) -> float:
   "Distances between two rows."
   n = sum(dist(c, r1[c.at], r2[c.at])**the.p for c in i.cols.x)
@@ -509,18 +514,56 @@ def smo(i:data, score=lambda B,R,I,N: B-R, callBack=lambda x:x ):
 
     #return sorted(todo,key=key,reverse=True)
 
-  def _smo1(todo:rows, done:rows) -> rows:
+  def _smo1(todo:rows, done:rows, most) -> rows:
     "Guess the `top`  unlabeled row, add that to `done`, resort `done`, and repeat"
     for k in range(the.Last - the.label):
       if len(todo) < 3: break
       top,*todo = _guess(todo, done)
+      most = top if  most ==[] or d2h(i,top) < d2h(i,most) else most
       #print(d2h(i,top))
       done += [top]
       done = _ranked(done)
-    return done
+    return done,most
 
-  random.shuffle(i.rows) # remove any  bias from older runs
-  return _smo1(i.rows[the.label:], _ranked(i.rows[:the.label]))
+  random.shuffle(i.rows)
+  most = [] # remove any  bias from older runs
+  initial = _ranked(i.rows[:the.label])
+  done,most = _smo1(i.rows[the.label:],initial, most)
+  return done, [i, [most], initial[:2], initial[2:], done]
+
+
+#--------- --------- --------- --------- --------- --------- --------- --------- ---------
+# ## Correlation
+
+def correlation(i : data, col1 : cols, col2 : cols) -> num:
+  "Calculates the correlation between two columns"
+  if col1.this == SYM or col2.this == SYM:
+    return None
+    
+  n = len(i.rows)
+
+  # Calculate sums
+  col1_sum = sum(row[col1.at] for row in i.rows)
+  col2_sum = sum(row[col2.at] for row in i.rows)
+
+  # Calculate sum of squares
+  col1_ssum = sum(row[col1.at]**2 for row in i.rows)
+  col2_ssum = sum(row[col2.at]**2 for row in i.rows)
+
+  # Calculate sum of products
+  col12_sum = sum(row[col1.at] * row[col2.at] for row in i.rows)
+
+  # Calculate numerator and denominator for the Pearson correlation formula
+  numerator = n * col12_sum - col1_sum * col2_sum
+  denominator = ((n * col1_ssum - col1_sum**2) * (n * col2_ssum - col2_sum**2))**0.5
+
+  # Avoid division by zero
+  if denominator == 0:
+      return 0
+
+  return "%.3f" % (numerator / denominator)
+
+  
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 # ## Stats
@@ -573,12 +616,13 @@ class SOME:
     def dur(i):
       "Returns the duration of the current experiment"
       duration = i.end - i.start
-      if duration < 60:
-        return f"{duration:.2f} secs"
-      elif duration < 3600:
-        return f"{duration / 60:.2f} mins"
-      else:
-        return f"{duration / 3600:.2f} hours"
+      return f"{duration:.2f}"
+      #if duration < 60:
+      #  return f"{duration:.2f} secs"
+      #elif duration < 3600:
+      #  return f"{duration / 60:.2f} mins"
+      #else:
+      #  return f"{duration / 3600:.2f} hours"
 
     def mid(i) -> number:
       "Return the middle of the distribution."
@@ -764,6 +808,22 @@ class eg:
   def all():
     "Run all actions. Return to OS a count of failing actions (those returning `False`.."
     sys.exit(sum(run(s)==False for s in dir(eg) if s[0] !="_" and s !=  "all"))
+
+  def corr():
+    data1 = DATA(csv(the.train))
+    #print(data1)
+    x = data1.cols.x[0]
+    y = data1.cols.x[1]
+
+    c = []
+    for col1 in data1.cols.x:
+      temp = []
+      for col2 in data1.cols.x:
+        temp.append(correlation(data1, col1, col2))
+      c.append(temp)
+    
+    print(c)
+
 
   def help():
     "Print help."

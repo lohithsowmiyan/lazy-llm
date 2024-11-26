@@ -80,14 +80,17 @@ docs/%.html : %.py ## .py --> .html
 
 
 
-#ALLS= $(subst data/hpo,var/out/alls,$(wildcard data/hpo/*.csv))
+
+
+ALLS= $(subst data/hpo,var/out/alls,$(wildcard data/hpo/*.csv))
 push    : ## save
 	git add $(OUTPUT_FILE)
-	git commit -m "$(GIT_MESSAGE)"
+	git commit -m "$(GIT_MESSAGE)
 	git push
 
-var/out/alls/auto93.csv : data/misc/auto93.csv
+var/out/fews/auto93.csv : data/misc/auto93.csv
 	mkdir -p $(dir $@)
+	git pull
 	echo $<; python3 ./lazy.py --dataset $< --model alls | tee $@
 	git add $(OUTPUT_FILE)
 	git commit -m "$(GIT_MESSAGE)"
@@ -97,16 +100,43 @@ alls:
 	mkdir -p var/out/alls
 	$(MAKE) -j $(ALLS)
 
-SMOS= $(subst data/config,var/out/smos,$(wildcard data/config/*.csv)) \
+	
+
+WARMS= $(subst data/config,var/out/smos,$(wildcard data/config/*.csv)) \
       $(subst data/misc,var/out/smos,$(wildcard data/misc/*.csv)) \
       $(subst data/process,var/out/smos,$(wildcard data/process/*.csv)) \
       $(subst data/hpo,var/out/smos,$(wildcard data/hpo/*.csv))
 
-var/out/smos/%.csv : data/config/%.csv  ; echo $<; ./ezr.py -t $< -R smos | tee $@
-var/out/smos/%.csv : data/misc/%.csv    ; echo $<; ./ezr.py -t $< -R smos | tee $@
-var/out/smos/%.csv : data/process/%.csv ; echo $<; ./ezr.py -t $< -R smos | tee $@
-var/out/smos/%.csv : data/hpo/%.csv     ; echo $<; ./ezr.py -t $< -R smos | tee $@
+var/out/warms/%.csv : data/config/%.csv  ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
+var/out/warms/%.csv : data/misc/%.csv    ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
+var/out/warms/%.csv : data/process/%.csv ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
+var/out/warms/%.csv : data/hpo/%.csv     ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
 
 smos: 
 	mkdir -p var/out/smos
 	$(MAKE) -j $(SMOS)
+
+
+
+FILES = data/config/SS-A.csv 
+
+# Generate the target file paths for `var/out/smos`
+DEMOS = $(patsubst data/config/%,$(shell echo var/out/warms/%),$(FILES)) 
+       
+# Pattern rules for processing files from different source directories
+var/out/warms/%.csv : data/config/%.csv
+	@echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< 
+# Target to create output directory and process the files
+demo:
+	
+	$(MAKE) -j $(DEMOS)
+	git add $(OUTPUT_FILE)
+	git commit -m "$(GIT_MESSAGE)"
+	git push
+
+
+	
+
+
+
+
