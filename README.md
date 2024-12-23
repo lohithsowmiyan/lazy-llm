@@ -44,6 +44,12 @@ python lazy.py --model vanilla --llm llama3-8b --dataset data/misc/auto93.csv
 python lazy.py --model vanilla --llm gpt-3.5-turbo --dataset data/misc/wine_quality.csv
 ```
 
+## Run Entire Experiment
+
+```bash
+make RQ123
+```
+
 
 ## Configurations
 
