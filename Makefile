@@ -78,28 +78,6 @@ docs/%.html : %.py ## .py --> .html
 	ps2pdf $@.ps $@; rm $@.ps    
 	open $@
 
-
-
-
-
-ALLS= $(subst data/hpo,var/out/alls,$(wildcard data/hpo/*.csv))
-push    : ## save
-	git add $(OUTPUT_FILE)
-	git commit -m "$(GIT_MESSAGE)
-	git push
-
-var/out/fews/auto93.csv : data/misc/auto93.csv
-	mkdir -p $(dir $@)
-	git pull
-	echo $<; python3 ./lazy.py --dataset $< --model alls | tee $@
-	git add $(OUTPUT_FILE)
-	git commit -m "$(GIT_MESSAGE)"
-	git push
-
-alls: 
-	mkdir -p var/out/alls
-	$(MAKE) -j $(ALLS)
-
 	
 
 WARMS= $(subst data/config,var/out/smos,$(wildcard data/config/*.csv)) \
@@ -112,27 +90,12 @@ var/out/warms/%.csv : data/misc/%.csv    ; echo $<; python3 ./lazy.py  --model w
 var/out/warms/%.csv : data/process/%.csv ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
 var/out/warms/%.csv : data/hpo/%.csv     ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
 
-smos: 
+RQ123: 
 	mkdir -p var/out/smos
 	$(MAKE) -j $(SMOS)
 
 
 
-FILES = data/config/SS-A.csv 
-
-# Generate the target file paths for `var/out/smos`
-DEMOS = $(patsubst data/config/%,$(shell echo var/out/warms/%),$(FILES)) 
-       
-# Pattern rules for processing files from different source directories
-var/out/warms/%.csv : data/config/%.csv
-	@echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< 
-# Target to create output directory and process the files
-RQ123:
-	
-	$(MAKE) -j $(DEMOS)
-	git add $(OUTPUT_FILE)
-	git commit -m "$(GIT_MESSAGE)"
-	git push
 
 
 	
