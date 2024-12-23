@@ -9,7 +9,7 @@ active learning can benefit from an effective
  set of initial guesses (also known as warm starts).  This paper explores the use of Large Language Models (LLMs) for creating warm-starts. Those results are  compared   against   Gaussian Process Models and Tree of Parzen Estimators. For 49 SE  tasks, LLM-generated warm starts significantly improved the performance of low- and medium-dimensional tasks. However, LLM effectiveness  diminishes in high-dimensional problems, where Bayesian methods like Gaussian Process Models perform best. 
 
 
-This repo geenrates the reports needed to address research questions 1,2,3 fro our recent [![PDF Badge](https://img.shields.io/badge/my_documentation-000?style=for-the-badge&logo=adobe&logoColor=white)](https://github.com/lohithsowmiyan/lazy-llm/blob/main/docs/paper.pdf) on combining LLMs with active learning for SE multi-objective optimization problems.
+This repo geenrates the reports needed to address research questions 1,2,3 fro our recent [![PDF Badge](https://img.shields.io/badge/View%20PDF-red?style=for-the-badge&logo=adobeacrobatreader&logoColor=white)](https://github.com/lohithsowmiyan/lazy-llm/blob/main/docs/paper.pdf) on combining LLMs with active learning for SE multi-objective optimization problems.
 ## Environment Setup
 
 
