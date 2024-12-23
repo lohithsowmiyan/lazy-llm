@@ -1,8 +1,15 @@
 
-# LazyLLM (LLMs For SMO)
+# Can Large Language Models Improve SE Active Learning via Warm-Starts 
 
 
+## Abstract
+When SE data is scarce,  ``active learners''   use   models learned from tiny samples of the data to find the next most informative example to label. In this way, effective models can be generated using very little data.
+For multi-objective software engineering (SE) tasks,
+active learning can benefit from an effective 
+ set of initial guesses (also known as ``warm starts'').  This paper explores the use of Large Language Models (LLMs) for creating warm-starts. Those results are  compared   against   Gaussian Process Models and Tree of Parzen Estimators. For 49 SE  tasks, LLM-generated warm starts significantly improved the performance of low- and medium-dimensional tasks. However, LLM effectiveness  diminishes in high-dimensional problems, where Bayesian methods like Gaussian Process Models perform best. 
 
+
+This repo geenrates the reports needed to address research questions 1,2,3 fro our recent [![paper]](https://katherineoelsner.com/) on combining LLMs with active learning for SE multi-objective optimization problems.
 ## Environment Setup
 
 
