@@ -127,7 +127,7 @@ DEMOS = $(patsubst data/config/%,$(shell echo var/out/warms/%),$(FILES))
 var/out/warms/%.csv : data/config/%.csv
 	@echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< 
 # Target to create output directory and process the files
-demo:
+RQ123:
 	
 	$(MAKE) -j $(DEMOS)
 	git add $(OUTPUT_FILE)
