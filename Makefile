@@ -80,19 +80,15 @@ docs/%.html : %.py ## .py --> .html
 
 	
 
-WARMS= $(subst data/config,var/out/smos,$(wildcard data/config/*.csv)) \
-      $(subst data/misc,var/out/smos,$(wildcard data/misc/*.csv)) \
-      $(subst data/process,var/out/smos,$(wildcard data/process/*.csv)) \
-      $(subst data/hpo,var/out/smos,$(wildcard data/hpo/*.csv))
+DIMS= $(subst data/reduced,var/out/dims,$(wildcard data/reduced/*.csv)) \
+      
 
-var/out/warms/%.csv : data/config/%.csv  ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
-var/out/warms/%.csv : data/misc/%.csv    ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
-var/out/warms/%.csv : data/process/%.csv ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
-var/out/warms/%.csv : data/hpo/%.csv     ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
+var/out/dims/%.csv : data/reduced/%.csv  ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
 
-RQ123: 
-	mkdir -p var/out/smos
-	$(MAKE) -j $(SMOS)
+
+demo: 
+	mkdir -p var/out/dims
+	$(MAKE) -j $(DIMS)
 
 
 
