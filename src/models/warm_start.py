@@ -171,8 +171,11 @@ def WARM_FEW_API(i: data, args, method = 'LLMExtra'):
 
         sythetic = SYNTHETIC(i, best, rest)
         messages = sythetic.get_template_markdown()
+        #print(messages)
+
       
         result = model.invoke(messages).content
+        #print(result)
         
         best, rest = _markdown_to_rows(result)
         #print(best, rest) 

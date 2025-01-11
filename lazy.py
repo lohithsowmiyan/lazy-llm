@@ -11,6 +11,7 @@ from src.models.few import FEW
 from src.models.smo import SMO
 from src.models.zero import ZERO
 from src.models.warm_start import warm_smo
+from src.models.cluster import density
 from src.models.gpm import ucbs,pis,eis
 
 
@@ -250,7 +251,51 @@ def warms(args):
         visualize2(args.dataset, graphs)
 
 
+def clusters(args):
+    repeats=20
+    d = DATA(csv(args.dataset))
+    e = math.exp(1)
+    rxs={}
+    rxs["baseline"] = SOME(txt=f"baseline,{len(d.rows)}",inits=[chebyshev(d,row) for row in d.rows])
+    rx=f"rrp,{int(0.5+math.log(len(d.rows),2)+1)}"
+    rxs[rx] = SOME(txt=rx)
+    for _ in range(repeats):
+        best,_,_ = branch(d,d.rows,4); rxs[rx].add(chebyshev(d,best[0]))
+
+    scoring_policies = [
+        ('exploit', lambda B, R, I, N: exploit(B, R)),
+        ('explore', lambda B, R, I, N: explore(B, R)),
+        #('b2', lambda B, R, I, N: (B**2) / (R + 1E-30)),
+        #('Focus', lambda B, R, I, N: abs(((B + 1) ** m(I, N, 1) + (R + 1)) / (abs(B - R) + 1E-30))),
+        #('ExpProgressive', lambda B, R, I, N: m(I, N, 0) * exploit(B,R) + (1 - m(I, N, 0)) * explore(B,R))
+    ]
     
+    # for last in [20,25,30]:
+    #   the.Last= last
+    #   guess = lambda : clone(d,random.choices(d.rows, k=last),rank=True).rows[0]
+    #   rx=f"random,{last}"
+    #   rxs[rx] = SOME(txt=rx, inits=[chebyshev(d,guess()) for _ in range(repeats)])
+      
+    #   gps = [('UCB_GPM', ucbs(args)), ('PI_GPM', pis(args)), ('EI_GPM', eis(args))]
+    #   for guesFaster in [True]:
+    #     for what, how in gps:
+    #         rx = f"{what},{the.Last}"
+    #         rxs[rx] = SOME(txt=rx)
+    #         for _ in range(repeats):
+    #             btw(".")
+    #             rxs[rx].add(d2h(d, how[0]))
+    #         btw("\n")
+
+    rx = f"LLM+Density/30"
+    rxs[rx] = SOME(txt = rx)
+
+    for _ in range(repeats):
+        btw(".")
+        res = density(args)
+        rxs[rx].add(chebyshev(d, res[20]))
+
+    report(rxs.values())
+
 
 
         
@@ -271,6 +316,8 @@ if __name__ == "__main__":
     if(args.model == 'warms'):
         warms(args)
 
+    if(args.model == 'density'):
+        clusters(args)
     #print(save_results())
 
 
