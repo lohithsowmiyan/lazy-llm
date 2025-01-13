@@ -50,8 +50,8 @@ def density(args, method ='LLM'):
 
   # remove any  bias from older runs
   most = []
-  i = DATA(csv(args.dataset))
-  done, new_done ,todo = WARM_FEW_API(i, args, method = method)
+  #i = DATA(csv(args.dataset))
+  #done, new_done ,todo = WARM_FEW_API(i, args, method = method)
 
   #Clustering into dense and sparse regions
   data = pd.read_csv(args.dataset)
@@ -72,32 +72,37 @@ def density(args, method ='LLM'):
     
     dense_data.to_csv(dense_path, index=False)
     sparse_data.to_csv(sparse_path, index=False)
+    args.last = 30
+    i = DATA(csv(dense_path))
 
-    i_dense = DATA(csv(dense_path))
-    i_sparse = DATA(csv(sparse_path))
+    done, new_done ,todo = WARM_FEW_API(i, args, method = method)
+    final_results = _smo1(todo, _ranked(new_done))
 
-    set1 = set(map(tuple, new_done))
-    set2 = set(map(tuple, i_sparse.rows))
+
+    #i_sparse = DATA(csv(sparse_path))
+
+    #set1 = set(map(tuple, new_done))
+    #set2 = set(map(tuple, i_sparse.rows))
 
     # Find rows in list2 that are not in list1
-    difference = set2 - set1
+    #difference = set2 - set1
 
     # Convert the result back to a list of lists
-    sparse_todo = list(map(list, difference))
+    #sparse_todo = list(map(list, difference))
 
-    args.last = 24
-    results =  _smo1(sparse_todo, _ranked(new_done))
+    # args.last = 24
+    # results =  _smo1(sparse_todo, _ranked(new_done))
 
-    set1 = set(map(tuple, results))
-    set2 = set(map(tuple, i_dense.rows))
+    # set1 = set(map(tuple, results))
+    # set2 = set(map(tuple, i_dense.rows))
 
-    difference = set2 - set1
+    # difference = set2 - set1
 
-    dense_todo = list(map(list, difference))
+    # dense_todo = list(map(list, difference))
 
-    args.last = 24
-    scores = ['exploit']
-    final_results = _smo1(dense_todo, _ranked(results))
+    # args.last = 24
+    # scores = ['exploit']
+    # final_results = _smo1(dense_todo, _ranked(results))
 
 
   return final_results

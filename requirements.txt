@@ -16,3 +16,4 @@ pillow
 einops
 scikit-learn
 pandas
+imblearn

@@ -189,7 +189,7 @@ def warms(args):
         #('ExpProgressive', lambda B, R, I, N: m(I, N, 0) * exploit(B,R) + (1 - m(I, N, 0)) * explore(B,R))
     ]
     
-    for last in [20,25,30]:
+    for last in [20]:
       the.Last= last
       guess = lambda : clone(d,random.choices(d.rows, k=last),rank=True).rows[0]
       rx=f"random,{last}"
@@ -270,21 +270,21 @@ def clusters(args):
         #('ExpProgressive', lambda B, R, I, N: m(I, N, 0) * exploit(B,R) + (1 - m(I, N, 0)) * explore(B,R))
     ]
     
-    # for last in [20,25,30]:
-    #   the.Last= last
-    #   guess = lambda : clone(d,random.choices(d.rows, k=last),rank=True).rows[0]
-    #   rx=f"random,{last}"
-    #   rxs[rx] = SOME(txt=rx, inits=[chebyshev(d,guess()) for _ in range(repeats)])
+    for last in [20]:
+      the.Last= last
+      guess = lambda : clone(d,random.choices(d.rows, k=last),rank=True).rows[0]
+      rx=f"random,{last}"
+      rxs[rx] = SOME(txt=rx, inits=[chebyshev(d,guess()) for _ in range(repeats)])
       
-    #   gps = [('UCB_GPM', ucbs(args)), ('PI_GPM', pis(args)), ('EI_GPM', eis(args))]
-    #   for guesFaster in [True]:
-    #     for what, how in gps:
-    #         rx = f"{what},{the.Last}"
-    #         rxs[rx] = SOME(txt=rx)
-    #         for _ in range(repeats):
-    #             btw(".")
-    #             rxs[rx].add(d2h(d, how[0]))
-    #         btw("\n")
+      gps = [('UCB_GPM', ucbs(args)), ('PI_GPM', pis(args)), ('EI_GPM', eis(args))]
+      for guesFaster in [True]:
+        for what, how in gps:
+            rx = f"{what},{the.Last}"
+            rxs[rx] = SOME(txt=rx)
+            for _ in range(repeats):
+                btw(".")
+                rxs[rx].add(d2h(d, how[0]))
+            btw("\n")
 
     rx = f"LLM+Density/30"
     rxs[rx] = SOME(txt = rx)

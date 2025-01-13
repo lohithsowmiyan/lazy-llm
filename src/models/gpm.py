@@ -16,7 +16,7 @@ from sklearn.exceptions import ConvergenceWarning
 warnings.filterwarnings("ignore", category=ConvergenceWarning)
 warnings.filterwarnings("ignore", message="Predicted variances smaller than 0. Setting those variances to 0.")
 
-def _UCB_GPM(i, todo, done):
+def _UCB_GPM(i, todo, done, args):
     kernel = C(1.0, (1e-8, 1e8)) * RBF(1.0, (1e-8, 1e8))
     gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10, optimizer=None)
     
@@ -57,7 +57,8 @@ def _UCB_GPM(i, todo, done):
         mean, std = gp.predict(x_transformed, return_std=True)
         return mean + kappa * std
     
-    while todo and len(done) < the.Last:
+    while todo and len(done) < args.last:
+        print("#")
         update_gp_model(done)
         random.shuffle(todo)
         todo_subset = todo[:the.any]
@@ -71,7 +72,7 @@ def _UCB_GPM(i, todo, done):
     print(len(done))
     return sorted(done, key = lambda r:d2h(i,r))
 
-def _PI_GPM(i, todo, done, xi=0.01):
+def _PI_GPM(i, todo, done, args, xi=0.01):
     # Define the kernel for the Gaussian Process
     kernel = C(1.0, (1e-8, 1e8)) * RBF(1.0, (1e-8, 1e8))
     gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10, optimizer=None)
@@ -122,7 +123,7 @@ def _PI_GPM(i, todo, done, xi=0.01):
         return norm.cdf(Z)
     
     # Run the optimization process
-    while todo and len(done) < the.Last:
+    while todo and len(done) < args.last:
         update_gp_model(done)
         random.shuffle(todo)
         todo_subset = todo[:the.any]
@@ -138,7 +139,7 @@ def _PI_GPM(i, todo, done, xi=0.01):
     # Return the final sorted done list
     return sorted(done, key=lambda r: d2h(i, r))
 
-def _EI_GPM(i, todo, done, xi=0.01):
+def _EI_GPM(i, todo, done, args, xi=0.01):
     # Define the kernel for the Gaussian Process
     kernel = C(1.0, (1e-8, 1e8)) * RBF(1.0, (1e-8, 1e8))
     gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10, optimizer=None)
@@ -194,7 +195,7 @@ def _EI_GPM(i, todo, done, xi=0.01):
         return ei_value
     
     # Run the optimization process
-    while todo and len(done) < the.Last:
+    while todo and len(done) < args.last:
         update_gp_model(done)
         random.shuffle(todo)
         todo_subset = todo[:the.any]
@@ -218,13 +219,16 @@ def _ranked(i,lst:rows) -> rows:
 
 def ucbs(args):
     i = DATA(csv(args.dataset))
-    return _UCB_GPM(i, i.rows[args.label:], _ranked(i,i.rows[:args.label]))
+    random.shuffle(i.rows)
+    return _UCB_GPM(i, i.rows[args.label:], _ranked(i,i.rows[:args.label]), args)
 
 def pis(args):
     i = DATA(csv(args.dataset))
-    return _PI_GPM(i, i.rows[args.label:], _ranked(i,i.rows[:args.label]))
+    random.shuffle(i.rows)
+    return _PI_GPM(i, i.rows[args.label:], _ranked(i,i.rows[:args.label]), args)
 
 def eis(args):
     i = DATA(csv(args.dataset))
-    return _EI_GPM(i, i.rows[args.label:], _ranked(i,i.rows[:args.label]))
+    random.shuffle(i.rows)
+    return _EI_GPM(i, i.rows[args.label:], _ranked(i,i.rows[:args.label]), args)
 
