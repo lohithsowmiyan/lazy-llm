@@ -110,7 +110,7 @@ class API_LLM(LLM):
             return ChatGoogleGenerativeAI(
                         model= self.model_name,
                         temperature= self.temperature,  
-                        max_tokens= self.max_tokens, 
+
                         top_p= self.top_p
                     )
 
