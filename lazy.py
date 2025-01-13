@@ -189,8 +189,8 @@ def warms(args):
         #('ExpProgressive', lambda B, R, I, N: m(I, N, 0) * exploit(B,R) + (1 - m(I, N, 0)) * explore(B,R))
     ]
     
-    for last in [20]:
-      the.Last= last
+    for last in [20,25,30]:
+      args.last= last
       guess = lambda : clone(d,random.choices(d.rows, k=last),rank=True).rows[0]
       rx=f"random,{last}"
       rxs[rx] = SOME(txt=rx, inits=[chebyshev(d,guess()) for _ in range(repeats)])
@@ -198,11 +198,11 @@ def warms(args):
       gps = [('UCB_GPM', ucbs(args)), ('PI_GPM', pis(args)), ('EI_GPM', eis(args))]
       for guesFaster in [True]:
         for what, how in gps:
-            rx = f"{what},{the.Last}"
+            rx = f"{what},{args.last}"
             rxs[rx] = SOME(txt=rx)
             for _ in range(repeats):
                 btw(".")
-                rxs[rx].add(d2h(d, how[0]))
+                rxs[rx].add(chebyshev(d, how[0]))
             btw("\n")
       
       graphs = {'exploit' : [], 'LINEAR/exploit' : [], 'LLM/exploit' : []}
@@ -210,7 +210,7 @@ def warms(args):
       for  guessFaster in [True]:
         for what,how in  scoring_policies:
           the.GuessFaster = guessFaster
-          rx=f"{what},{the.Last}"
+          rx=f"{what},{args.last}"
           rxs[rx] = SOME(txt=rx)
           for _ in range(repeats):
             btw(".")
@@ -225,7 +225,7 @@ def warms(args):
         for start in ['LLM']:
             for what,how in  scoring_policies:
                 the.GuessFaster = guessFaster
-                rx=f"{start}/{what},{the.Last}"
+                rx=f"{start}/{what},{args.last}"
                 rxs[rx] = SOME(txt=rx)
                 for _ in range(repeats):
                     btw(".")
