@@ -95,6 +95,16 @@ RQ123:
 	$(MAKE) -j $(SMOS)
 
 
+WARMS= $(subst data/feature,var/out/exploit+llm,$(wildcard data/feature/*.csv))
+
+
+var/out/exploit+llm/%.csv : data/feature/%.csv  ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
+
+demo: 
+	mkdir -p var/out/exploit+llm
+	$(MAKE) -j $(WARMS)
+
+
 
 
 

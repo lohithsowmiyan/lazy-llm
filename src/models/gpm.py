@@ -58,7 +58,7 @@ def _UCB_GPM(i, todo, done, args):
         return mean + kappa * std
     
     while todo and len(done) < args.last:
-        print("#")
+        #print("#")
         update_gp_model(done)
         random.shuffle(todo)
         todo_subset = todo[:the.any]

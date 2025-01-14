@@ -9,6 +9,7 @@ from statistics import mode
 import warnings
 import json
 import time
+from src.models.smo import SMO
 
 def _post_process(result : str) -> dict:
     "Converts the output from the model to usable"
@@ -306,15 +307,18 @@ def warm_smo_plus(args, score = lambda B,R,I,N : B-R, method = 'LLM'):
 
     i = DATA(csv(args.dataset))
     random.shuffle(i.rows)
-    rrp = branch(i,i.rows,4)[0]
-    done = [rrp[0], rrp[1], rrp[-2], rrp[-1]]
-    done = set(done)
-    rows_ = set(i.rows)
-    todo = rows_ - done
-    done = list(done)
-    todo = list(todo)
+    branches = SMO(args)
+    done = {tuple(branches[0]), tuple(branches[1]), tuple(branches[-2]), tuple(branches[-1])}
 
-    done, new_done ,todo = WARM_FEW_API(i, args,todo, done, method = method)
+
+
+
+    todo = set(tuple(_) for _ in i.rows)
+    todo = todo - done
+    
+
+
+    done, new_done ,todo = WARM_FEW_API(i, args, list(todo), list(done), method = method)
     #done, new_done ,todo = WARM_FEW_API(i, args, method = method)
     k = 0
     while k  < args.last - args.label:

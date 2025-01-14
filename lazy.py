@@ -245,9 +245,9 @@ def warms(args):
     #         btw("\n")
 
 
-        for guessFaster in [True]:
+      for guessFaster in [True]:
             for start in ['LLM']:
-                the.GuessFaster = guesFaster
+                the.GuessFaster = guessFaster
                 rx = f"{start}++,{args.last}"
                 rxs[rx] = SOME(txt = rx)
                 for _ in range(repeats):

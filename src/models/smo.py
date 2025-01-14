@@ -8,7 +8,7 @@ import warnings
 import time
 
 def SMO(args):
-    random.seed(args.seed)
+     
     records = []
 
     def _tile(lst, curd2h, budget):
@@ -56,8 +56,8 @@ def SMO(args):
         random.shuffle(i.rows) # remove any  bias from older runs
         return _smo1(i.rows[4:], _ranked(i.rows[:4]))
 
-    smo(DATA(csv(args.dataset)),callBack = _tile)
-    save_results_txt(model = args.model, dataset = args.dataset, records =  records)
-    time.sleep(5)
-    visualize(dataset = args.dataset[args.dataset.rfind('/')+1:-4], show = 'All', save_fig= True, display = False)
-    return True
+    return smo(DATA(csv(args.dataset)))
+    # save_results_txt(model = args.model, dataset = args.dataset, records =  records)
+    # time.sleep(5)
+    # visualize(dataset = args.dataset[args.dataset.rfind('/')+1:-4], show = 'All', save_fig= True, display = False)
+    # return True
