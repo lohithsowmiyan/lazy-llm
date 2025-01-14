@@ -10,6 +10,37 @@ import warnings
 import json
 import time
 
+def _post_process(result : str) -> dict:
+    "Converts the output from the model to usable"
+    json_start = result.find('{')
+    json_end = result.rfind('}') + 1
+    json_str = result[json_start:json_end]
+    data = json.loads(json_str)
+    best , rest = [], []
+
+    for bst,rst in zip(data['better_examples'], data['poorer_examples']):
+        best.append(bst['features'])
+        rest.append(rst['features'])   
+
+        return best,rest
+def _markdown_to_rows(markdown):
+    "Converts a Markdown table to a list of lists (rows)."
+    
+    lines = markdown.strip().split('\n')
+    lines.pop(1)
+    rows = [line.strip('|').split('|') for line in lines]
+    rows = [[cell.strip() for cell in row] for row in rows]
+    rows = rows[1:]
+
+    best, rest = [], []
+
+    for r in rows:
+        if r[-1] == 'Best': best.append([float(val) for val in r[:-1]])
+        elif r[-1] == 'Rest': rest.append([float(val) for val in r[:-1]])        
+    
+    return best,rest
+
+
 def WARM_FEW_API(i: data, args, method = 'LLMExtra'):
 
     def calculate_mean(example_list):
@@ -207,6 +238,97 @@ def WARM_FEW_API(i: data, args, method = 'LLMExtra'):
     random.shuffle(i.rows) # remove any  bias from older runs
     return n_examples(i.rows[args.label:],_ranked(i.rows[:args.label]))
 
+    
+def WARM_FEW_API(i: data, args,  todo:rows, done:rows, method = 'LLMExtra'):
+    def _ranked(lst:rows, cur:row = None) -> rows:
+        "Sort `lst` by distance to heaven. Called by `_smo1()`."
+        lst = sorted(lst, key = lambda r:d2h(i,r))
+        #callBack([d2h(i,r) for r in lst], 0 if cur == None else d2h(i,cur))
+        return lst
+
+    def _synthesise(done: rows):
+        "Synthesise better examples based on the initial random samples"
+        #(model, dir) =  load_model(args).get_pipeline()
+        model = load_model(args, name = 'gemini').get_pipeline()
+        cut = int(.5 + len(done) ** 0.5)
+        best = clone(i, done[:cut]).rows
+        rest = clone(i, done[cut:]).rows
+
+        
+
+        sythetic = SYNTHETIC(i, best, rest)
+        messages = sythetic.get_template_markdown()
+        #print(messages)
+
+      
+        result = model.invoke(messages).content
+        #print(result)
+        
+        best, rest = _markdown_to_rows(result)
+        #print(best, rest) 
+
+        return best + rest 
+        
+    def n_examples(todo:rows, done:rows):
+        "get the 4 start samples ready for active learning"
+        results = _synthesise(done) if method == 'LLM' else linear_extrapolation(done)
+
+        dff = 0
+
+        if(len(i.cols.names) != len(i.cols.x) + len(i.cols.y)):
+            dff = len(i.cols.names)  - len(i.cols.x) - len(i.cols.y)
+
+        x_size = len(i.cols.x) + dff
+
+        new_done = []
+        for record in results:
+            random.shuffle(todo)
+            key = lambda r : dists(i, record, r[:x_size])
+            top, *todo= sorted(todo, key=key, reverse=False)
+            new_done.append(top)
+
+        combined = _ranked(done+new_done)
+        new_done = [combined[0],combined[1],combined[-1],combined[-2]]
+        return done, new_done ,todo
+
+    random.shuffle(i.rows) # remove any  bias from older runs
+    return n_examples(todo,_ranked(done))
+
+    
+
+
+def warm_smo_plus(args, score = lambda B,R,I,N : B-R, method = 'LLM'):
+    def _ranked(lst:rows) -> rows:
+        "Sort `lst` by distance to heaven. Called by `_smo1()`."
+        lst = sorted(lst, key = lambda r:d2h(i,r))
+        return lst
+
+
+    i = DATA(csv(args.dataset))
+    random.shuffle(i.rows)
+    rrp = branch(i,i.rows,4)[0]
+    done = [rrp[0], rrp[1], rrp[-2], rrp[-1]]
+    done = set(done)
+    rows_ = set(i.rows)
+    todo = rows_ - done
+    done = list(done)
+    todo = list(todo)
+
+    done, new_done ,todo = WARM_FEW_API(i, args,todo, done, method = method)
+    #done, new_done ,todo = WARM_FEW_API(i, args, method = method)
+    k = 0
+    while k  < args.last - args.label:
+        done, new_done, todo = WARM_FEW_API(i, args,  todo, done, method = method)
+        k += 4
+
+    print(_ranked(new_done))
+    return _ranked(new_done)
+
+
+    
+    
+
+
 
 
 def warm_smo(args, score=lambda B,R,I,N: B-R, method ='LLM'):
@@ -233,6 +355,7 @@ def warm_smo(args, score=lambda B,R,I,N: B-R, method ='LLM'):
 
   def _smo1(todo:rows, done:rows, most: row) -> rows:
     "Guess the `top`  unlabeled row, add that to `done`, resort `done`, and repeat"
+    
     for k in range(args.last - args.label):
       if len(todo) < 3: break
       top,*todo = _guess(todo, done)
@@ -245,7 +368,10 @@ def warm_smo(args, score=lambda B,R,I,N: B-R, method ='LLM'):
   # remove any  bias from older runs
   most = []
   i = DATA(csv(args.dataset))
-  done, new_done ,todo = WARM_FEW_API(i, args, method = method)
+  todo, done = i.rows[args.label:],_ranked(i.rows[:args.label])
+  done, new_done ,todo = WARM_FEW_API(i, args,todo, done, method = method)
+  for _ in new_done:
+    print("row : ", _ , "chebys : ", chebyshev(i, _))
   results, most =  _smo1(todo, _ranked(new_done), most)
   
   return results, [i, [most], new_done[:2], new_done[2:], results]
