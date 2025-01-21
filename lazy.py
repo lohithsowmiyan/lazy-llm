@@ -193,7 +193,7 @@ def warms(args):
 
     both = lambda B,R, I, N: explore(B, R) if I/N < 0.5 else exploit(B, R)
     
-    for last in [20]:
+    for last in [20,25,30]:
       args.last= last
       guess = lambda : clone(d,random.choices(d.rows, k=last),rank=True).rows[0]
       rx=f"random,{last}"
@@ -245,15 +245,15 @@ def warms(args):
     #         btw("\n")
 
 
-      for guessFaster in [True]:
-            for start in ['LLM']:
-                the.GuessFaster = guessFaster
-                rx = f"{start}++,{args.last}"
-                rxs[rx] = SOME(txt = rx)
-                for _ in range(repeats):
-                    btw(".")
-                    res = warm_smo_plus(args, both, method = start)
-                    rxs[rx].add(chebyshev(d,res[0]))
+    for guessFaster in [True]:
+        for start in ['LLM']:
+            the.GuessFaster = guessFaster
+            rx = f"{start}++,{30}"
+            rxs[rx] = SOME(txt = rx)
+            for _ in range(repeats):
+                btw(".")
+                res = warm_smo_plus(args, both, method = start)
+                rxs[rx].add(chebyshev(d,res[0]))
                     
 
        
