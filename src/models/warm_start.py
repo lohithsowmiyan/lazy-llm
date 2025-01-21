@@ -307,26 +307,30 @@ def warm_smo_plus(args, score = lambda B,R,I,N : B-R, method = 'LLM'):
 
     i = DATA(csv(args.dataset))
     random.shuffle(i.rows)
-    branches = SMO(args)
-    done = {tuple(branches[0]), tuple(branches[1]), tuple(branches[-2]), tuple(branches[-1])}
 
+    points = random.choices(i.rows, k = 20)
+    sorted(points, key = lambda p : chebyshev(i,p))
 
+    best_points = points[:10]
+    rest_points = points[10:]
 
-
-    todo = set(tuple(_) for _ in i.rows)
-    todo = todo - done
     
-
-
-    done, new_done ,todo = WARM_FEW_API(i, args, list(todo), list(done), method = method)
+   
     #done, new_done ,todo = WARM_FEW_API(i, args, method = method)
+    all = []
     k = 0
-    while k  < args.last - args.label:
-        done, new_done, todo = WARM_FEW_API(i, args,  todo, done, method = method)
-        k += 4
+    while k  < 20:
+        done = random.choices(best_points, k = 2) + random.choices(rest_points, k= 2)
+        done = set((tuple(_) for _ in done))
+        todo = set((tuple(_) for _ in i.rows)) - done
 
-    print(_ranked(new_done))
-    return _ranked(new_done)
+
+        done, new_done, todo = WARM_FEW_API(i, args,  list(todo), list(done), method = method)
+        all += done + new_done
+        k += 2
+
+    #print(_ranked(all))
+    return _ranked(all)
 
 
     
