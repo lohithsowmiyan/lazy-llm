@@ -2,6 +2,7 @@ from src.language.llms import Local_LLM, API_LLM, LLM
 
 api_model_path = {
     "gemini" : "gemini-1.5-pro",
+    'gpt' : "gpt-4o"
 }
 
 local_model_path = {

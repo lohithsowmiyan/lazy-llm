@@ -250,7 +250,7 @@ def WARM_FEW_API(i: data, args,  todo:rows, done:rows, method = 'LLMExtra'):
     def _synthesise(done: rows):
         "Synthesise better examples based on the initial random samples"
         #(model, dir) =  load_model(args).get_pipeline()
-        model = load_model(args, name = 'gemini').get_pipeline()
+        model = load_model(args, name = args.llm).get_pipeline()
         cut = int(.5 + len(done) ** 0.5)
         best = clone(i, done[:cut]).rows
         rest = clone(i, done[cut:]).rows

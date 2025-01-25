@@ -199,15 +199,15 @@ def warms(args):
       rx=f"random,{last}"
       rxs[rx] = SOME(txt=rx, inits=[chebyshev(d,guess()) for _ in range(repeats)])
       
-      gps = [('UCB_GPM', ucbs(args)), ('PI_GPM', pis(args)), ('EI_GPM', eis(args))]
-      for guesFaster in [True]:
-        for what, how in gps:
-            rx = f"{what},{args.last}"
-            rxs[rx] = SOME(txt=rx)
-            for _ in range(repeats):
-                btw(".")
-                rxs[rx].add(chebyshev(d, how[0]))
-            btw("\n")
+    #   gps = [('UCB_GPM', ucbs(args)), ('PI_GPM', pis(args)), ('EI_GPM', eis(args))]
+    #   for guesFaster in [True]:
+    #     for what, how in gps:
+    #         rx = f"{what},{args.last}"
+    #         rxs[rx] = SOME(txt=rx)
+    #         for _ in range(repeats):
+    #             btw(".")
+    #             rxs[rx].add(chebyshev(d, how[0]))
+    #         btw("\n")
       
       graphs = {'exploit' : [], 'LINEAR/exploit' : [], 'LLM/exploit' : []}
 

@@ -5,7 +5,7 @@ import getpass
 import shutil
 import tempfile
 from langchain_huggingface.llms import HuggingFacePipeline
-from langchain_openai import OpenAI
+from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline, BitsAndBytesConfig
 
@@ -118,10 +118,10 @@ class API_LLM(LLM):
             if "OPENAI_API_KEY" not in os.environ:
                 print("Unable to find the API key please enter here:")
                 os.environ["OPENAI_API_KEY"] = getpass.getpass()
-            return OpenAI(
+            return ChatOpenAI(
                         model= self.model_name,
                         temperature= self.temperature,  
-                        max_tokens= self.max_tokens, 
+                        #max_tokens= self.max_tokens, 
                         top_p= self.top_p
                 )
 

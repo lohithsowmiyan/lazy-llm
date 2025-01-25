@@ -168,7 +168,9 @@ def add2col(i:col, x:any, n=1) -> any:
   if x != "?":
     i.n += n
     if i.this is NUM: _add2num(i,x,n)
-    else: i.has[x] = i.has.get(x,0) + n
+    else: 
+      i.has[id(x)] = i.has.get(id(x),0) + n
+      return id(x)
   return x
 
 def _add2num(i:num, x:any, n:int) -> None:
