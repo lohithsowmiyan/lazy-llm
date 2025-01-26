@@ -36,9 +36,11 @@ def _markdown_to_rows(markdown):
     best, rest = [], []
 
     for r in rows:
-        if r[-1] == 'Best': best.append([float(val) for val in r[:-1]])
-        elif r[-1] == 'Rest': rest.append([float(val) for val in r[:-1]])        
-    
+        if r[-1] == 'Best':
+            best.append([float(val) if val.replace('.', '', 1).isdigit() else val for val in r[:-1]])
+        elif r[-1] == 'Rest':
+            rest.append([float(val) if val.replace('.', '', 1).isdigit() else val for val in r[:-1]])        
+        
     return best,rest
 
 
@@ -109,8 +111,10 @@ def WARM_FEW_API(i: data, args, method = 'LLMExtra'):
         best, rest = [], []
 
         for r in rows:
-            if r[-1] == 'Best': best.append([float(val) for val in r[:-1]])
-            elif r[-1] == 'Rest': rest.append([float(val) for val in r[:-1]])        
+            if r[-1] == 'Best':
+                best.append([float(val) if val.replace('.', '', 1).isdigit() else val for val in r[:-1]])
+            elif r[-1] == 'Rest':
+                rest.append([float(val) if val.replace('.', '', 1).isdigit() else val for val in r[:-1]])       
         
         return best,rest
 
@@ -255,8 +259,8 @@ def WARM_FEW_API(i: data, args,  todo:rows, done:rows, method = 'LLMExtra'):
         best = clone(i, done[:cut]).rows
         rest = clone(i, done[cut:]).rows
 
-        
-
+        # print("old best :", best)
+        # print("old rest :", rest)
         sythetic = SYNTHETIC(i, best, rest)
         messages = sythetic.get_template_markdown()
         #print(messages)
@@ -268,7 +272,11 @@ def WARM_FEW_API(i: data, args,  todo:rows, done:rows, method = 'LLMExtra'):
         best, rest = _markdown_to_rows(result)
         #print(best, rest) 
 
+        # print("best:",best)
+        # print("rest:", rest)
+        # print("synsize", len(best[0]), len(rest[0]))
         return best + rest 
+        
         
     def n_examples(todo:rows, done:rows):
         "get the 4 start samples ready for active learning"
@@ -280,11 +288,11 @@ def WARM_FEW_API(i: data, args,  todo:rows, done:rows, method = 'LLMExtra'):
             dff = len(i.cols.names)  - len(i.cols.x) - len(i.cols.y)
 
         x_size = len(i.cols.x) + dff
-
+        # print("true size", x_size)
         new_done = []
         for record in results:
             random.shuffle(todo)
-            key = lambda r : dists(i, record, r[:x_size])
+            key = lambda r : dists(i,record, r[:x_size] )
             top, *todo= sorted(todo, key=key, reverse=False)
             new_done.append(top)
 

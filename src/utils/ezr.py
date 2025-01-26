@@ -169,8 +169,8 @@ def add2col(i:col, x:any, n=1) -> any:
     i.n += n
     if i.this is NUM: _add2num(i,x,n)
     else: 
-      i.has[id(x)] = i.has.get(id(x),0) + n
-      return id(x)
+      i.has[x] = i.has.get(x,0) + n
+
   return x
 
 def _add2num(i:num, x:any, n:int) -> None:
@@ -381,6 +381,8 @@ def chebyshev(i:data, r:row) -> float:
 
 def dists(i:data, r1:row, r2:row) -> float:
   "Distances between two rows."
+  # for c in i.cols.x:
+  #   print(c.at)
   n = sum(dist(c, r1[c.at], r2[c.at])**the.p for c in i.cols.x)
   return (n / len(i.cols.x))**(1/the.p)
 
