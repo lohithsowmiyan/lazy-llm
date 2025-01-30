@@ -105,6 +105,19 @@ demo:
 	$(MAKE) -j $(WARMS)
 
 
+FILES = data/tao/vp9.csv data/tao/SaC.csv data/tao/javagc.csv data/tao/hsmgp.csv data/tao/hipacc.csv data/tao/exastencils.csv data/tao/Apache.csv data/tao/7z.csv 
+
+DIMS = $(patsubst data/tao/%.csv,var/out/taohard/%.csv,$(filter data/tao/%.csv,$(FILES))) 
+
+var/out/taohard/%.csv: data/tao/%.csv ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
+
+demo:
+	mkdir -p var/out/taohard
+	$(MAKE) -j $(DIMS)
+	
+
+
+
 
 
 

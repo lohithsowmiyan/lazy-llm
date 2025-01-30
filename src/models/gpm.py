@@ -69,7 +69,7 @@ def _UCB_GPM(i, todo, done, args):
          
         done.append(best_candidate)
 
-    print(len(done))
+    #print(len(done))
     return sorted(done, key = lambda r:d2h(i,r))
 
 def _PI_GPM(i, todo, done, args, xi=0.01):
