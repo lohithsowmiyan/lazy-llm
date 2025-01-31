@@ -1,4 +1,4 @@
-root,mpm,prefork,worker,moreThreads,moreProcesses,sendfile,compression,noCompression,keepalive,basicAuth,tls,tlsAes128,tlsAes256,maxClients,compressionLevel,Performance+
+root,mpm,prefork,worker,moreThreads,moreProcesses,sendfile,compression,noCompression,keepalive,basicAuth,tls,tlsAes128,tlsAes256,maxClients,compressionLevel,Performance-
 1,1,1,0,0,0,0,0,1,0,0,1,0,1,512,0,167.7768
 1,1,1,0,0,0,0,0,1,0,0,1,0,1,1024,0,168.0676
 1,1,1,0,0,0,0,0,1,0,0,1,0,1,2048,0,166.7744
