@@ -12,7 +12,7 @@ from src.models.smo import SMO
 from src.models.zero import ZERO
 from src.models.warm_start import warm_smo,warm_smo_plus
 from src.models.cluster import density
-from src.models.gpm import ucbs,pis,eis
+from src.models.gpm import gpms
 from math import exp
 
 
@@ -199,15 +199,15 @@ def warms(args):
       rx=f"random,{last}"
       rxs[rx] = SOME(txt=rx, inits=[chebyshev(d,guess()) for _ in range(repeats)])
       
-    #   gps = [('UCB_GPM', ucbs(args)), ('PI_GPM', pis(args)), ('EI_GPM', eis(args))]
-    #   for guesFaster in [True]:
-    #     for what, how in gps:
-    #         rx = f"{what},{args.last}"
-    #         rxs[rx] = SOME(txt=rx)
-    #         for _ in range(repeats):
-    #             btw(".")
-    #             rxs[rx].add(chebyshev(d, how[0]))
-    #         btw("\n")
+      gps = [('UCB_GPM'), ('PI_GPM'), ('EI_GPM')]
+      for guesFaster in [True]:
+        for what in gps:
+            rx = f"{what},{args.last}"
+            rxs[rx] = SOME(txt=rx)
+            for _ in range(repeats):
+                btw(".")
+                rxs[rx].add(chebyshev(d, gpms(what,args)[0]))
+            btw("\n")
       
       graphs = {'exploit' : [], 'LINEAR/exploit' : [], 'LLM/exploit' : []}
 
@@ -245,15 +245,15 @@ def warms(args):
     #         btw("\n")
 
 
-    for guessFaster in [True]:
-        for start in ['LLM']:
-            the.GuessFaster = guessFaster
-            rx = f"{start}++,{30}"
-            rxs[rx] = SOME(txt = rx)
-            for _ in range(repeats):
-                btw(".")
-                res = warm_smo_plus(args, both, method = start)
-                rxs[rx].add(chebyshev(d,res[0]))
+    # for guessFaster in [True]:
+    #     for start in ['LLM']:
+    #         the.GuessFaster = guessFaster
+    #         rx = f"{start}++,{30}"
+    #         rxs[rx] = SOME(txt = rx)
+    #         for _ in range(repeats):
+    #             btw(".")
+    #             res = warm_smo_plus(args, both, method = start)
+    #             rxs[rx].add(chebyshev(d,res[0]))
                     
 
        
