@@ -306,38 +306,62 @@ def WARM_FEW_API(i: data, args,  todo:rows, done:rows, method = 'LLMExtra'):
     
 
 
-def warm_smo_plus(args, score = lambda B,R,I,N : B-R, method = 'LLM'):
+def warm_smo_plus(args, score = lambda B,R,I,N : B-R, method = 'LLM', start = 'Random'):
     def _ranked(lst:rows) -> rows:
         "Sort `lst` by distance to heaven. Called by `_smo1()`."
         lst = sorted(lst, key = lambda r:d2h(i,r))
         return lst
 
-
-    i = DATA(csv(args.dataset))
-    random.shuffle(i.rows)
-
-    points = random.choices(i.rows, k = 20)
-    sorted(points, key = lambda p : chebyshev(i,p))
-
-    best_points = points[:10]
-    rest_points = points[10:]
-
     
-   
-    #done, new_done ,todo = WARM_FEW_API(i, args, method = method)
-    all = []
-    k = 0
-    while k  < 20:
-        done = random.choices(best_points, k = 2) + random.choices(rest_points, k= 2)
-        done = set((tuple(_) for _ in done))
-        todo = set((tuple(_) for _ in i.rows)) - done
+    if start == 'Random':
+        i = DATA(csv(args.dataset))
+        random.shuffle(i.rows)
+
+        points = random.choices(i.rows, k = 20)
+        sorted(points, key = lambda p : chebyshev(i,p))
+
+        best_points = points[:10]
+        rest_points = points[10:]
+
+        #done, new_done ,todo = WARM_FEW_API(i, args, method = method)
+        all = []
+        k = 0
+        while k  < 20:
+            done = random.choices(best_points, k = 2) + random.choices(rest_points, k= 2)
+            done = set((tuple(_) for _ in done))
+            todo = set((tuple(_) for _ in i.rows)) - done
 
 
-        done, new_done, todo = WARM_FEW_API(i, args,  list(todo), list(done), method = method)
-        all += done + new_done
-        k += 2
+            done, new_done, todo = WARM_FEW_API(i, args,  list(todo), list(done), method = method)
+            all += done + new_done
+            k += 2
 
-    #print(_ranked(all))
+        # print(_ranked(all))
+
+    elif start == 'Diversity':
+        i = DATA(csv(args.dataset))
+        random.shuffle(i.rows)
+        d = dendogram(i)
+        points = leafs(d, stop = 4)
+        sorted(points, key = lambda p : chebyshev(i,p))
+
+        best_points = points[:8]
+        rest_points = points[8:]
+
+        #done, new_done ,todo = WARM_FEW_API(i, args, method = method)
+        all = []
+        k = 0
+        while k  < 28:
+            done = random.choices(best_points, k = 2) + random.choices(rest_points, k= 2)
+            done = set((tuple(_) for _ in done))
+            todo = set((tuple(_) for _ in i.rows)) - done
+
+
+            done, new_done, todo = WARM_FEW_API(i, args,  list(todo), list(done), method = method)
+            all += done + new_done
+            k += 2
+
+
     return _ranked(all)
 
 

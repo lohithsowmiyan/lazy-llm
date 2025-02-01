@@ -217,18 +217,14 @@ def _ranked(i,lst:rows) -> rows:
     lst = sorted(lst, key = lambda r:d2h(i,r))
     return lst
 
-def ucbs(args):
+def gpms(args, name):
     i = DATA(csv(args.dataset))
     random.shuffle(i.rows)
-    return _UCB_GPM(i, i.rows[args.label:], _ranked(i,i.rows[:args.label]), args)
 
-def pis(args):
-    i = DATA(csv(args.dataset))
-    random.shuffle(i.rows)
-    return _PI_GPM(i, i.rows[args.label:], _ranked(i,i.rows[:args.label]), args)
-
-def eis(args):
-    i = DATA(csv(args.dataset))
-    random.shuffle(i.rows)
-    return _EI_GPM(i, i.rows[args.label:], _ranked(i,i.rows[:args.label]), args)
+    if name == 'UCB_GPM':
+        return _UCB_GPM(i, i.rows[args.label:], _ranked(i,i.rows[:args.label]), args)
+    if name == 'PI_GPM':
+        return _PI_GPM(i, i.rows[args.label:], _ranked(i,i.rows[:args.label]), args)
+    if name == 'EI_GPM':
+        return _EI_GPM(i, i.rows[args.label:], _ranked(i,i.rows[:args.label]), args)
 

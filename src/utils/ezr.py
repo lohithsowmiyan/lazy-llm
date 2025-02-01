@@ -410,18 +410,18 @@ def where(i:data, dendo, row):
   else:
     return dendo.here
 
-def dendogram(i:data, region:rows=None, stop=None, before=None):
+def dendogram(i:data, region:rows=None, stop=None, before=None, lvl = 0):
   region = region or i.rows
-  stop = stop or 2*len(region)**the.N
+  stop = stop or 4
   node = o(this="dendogram",here=clone(i,region),
            reference=None, enough=0,
            left=None,right=None)
-  if len(region) > stop:
+  if lvl < stop:
     lefts,rights,left,right  = half(i,region, False, before)
     node.enough = dists(i,right,rights[0])
     node.reference=right
-    node.left=dendogram(i,lefts, stop, left)
-    node.right=dendogram(i,rights,stop, right) 
+    node.left=dendogram(i,lefts, stop, left, lvl+1)
+    node.right=dendogram(i,rights,stop, right, lvl+1) 
   return node 
 
 def showDendo(node,lvl=0):
@@ -430,6 +430,14 @@ def showDendo(node,lvl=0):
     else: print("\t",show(mids(node.here,node.here.cols.y)))
     if node.left: showDendo(node.left,lvl+1)
     if node.right: showDendo(node.right,lvl+1)
+
+def leafs(node, lvl = 0, centroids = []):
+    if not (node.left or node.right): centroids.append(mids(node.here))
+    if node.left: leafs(node.left, lvl+1)
+    if node.right: leafs(node.right, lvl+1)
+    return centroids
+    
+
 
 
 def branch(i:data, region:rows=None, stop=None, rest=None, evals=1, before=None):
@@ -916,8 +924,9 @@ class eg:
     data1 = DATA(csv(the.train))
     row =data1.rows[0]
     print(row)
-    d = dendogram(data1)
-    showDendo(d)
+    d = dendogram(data1, stop = 4)
+    print(leafs(d))
+    #showDendo(d)
     print(mids(where(data1,d,row)))
 
   def smo():

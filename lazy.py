@@ -206,7 +206,7 @@ def warms(args):
             rxs[rx] = SOME(txt=rx)
             for _ in range(repeats):
                 btw(".")
-                rxs[rx].add(chebyshev(d, gpms(what,args)[0]))
+                rxs[rx].add(chebyshev(d, gpms(args, what)[0]))
             btw("\n")
       
       graphs = {'exploit' : [], 'LINEAR/exploit' : [], 'LLM/exploit' : []}
@@ -245,15 +245,15 @@ def warms(args):
     #         btw("\n")
 
 
-    # for guessFaster in [True]:
-    #     for start in ['LLM']:
-    #         the.GuessFaster = guessFaster
-    #         rx = f"{start}++,{30}"
-    #         rxs[rx] = SOME(txt = rx)
-    #         for _ in range(repeats):
-    #             btw(".")
-    #             res = warm_smo_plus(args, both, method = start)
-    #             rxs[rx].add(chebyshev(d,res[0]))
+    for guessFaster in [True]:
+        for start in ['LLM']:
+            the.GuessFaster = guessFaster
+            rx = f"{start}++,{30}"
+            rxs[rx] = SOME(txt = rx)
+            for _ in range(repeats):
+                btw(".")
+                res = warm_smo_plus(args, both, method = start, start = 'Diversity')
+                rxs[rx].add(chebyshev(d,res[0]))
                     
 
        
