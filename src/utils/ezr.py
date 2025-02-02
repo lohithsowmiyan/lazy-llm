@@ -432,9 +432,9 @@ def showDendo(node,lvl=0):
     if node.right: showDendo(node.right,lvl+1)
 
 def leafs(node, lvl = 0, centroids = []):
-    if not (node.left or node.right): centroids.append(mids(node.here))
-    if node.left: leafs(node.left, lvl+1)
-    if node.right: leafs(node.right, lvl+1)
+    if not (node.left or node.right): centroids.append(random.choice(node.here.rows))
+    if node.left: leafs(node.left, lvl+1, centroids)
+    if node.right: leafs(node.right, lvl+1, centroids)
     return centroids
     
 
@@ -798,7 +798,7 @@ def main() -> None:
 def run(s:str) -> int:
   "Reset the seed. Run `eg.s()`, then restore old settings. Return '1' on failure. Called by `main()`."
   reset = {k:v for k,v in the.__dict__.items()}
-  random.seed(the.seed)
+  #random.seed(the.seed)
   out = _run1(s)
   for k,v in reset.items(): the.__dict__[k]=v
   return out

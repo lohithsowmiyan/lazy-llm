@@ -341,12 +341,15 @@ def warm_smo_plus(args, score = lambda B,R,I,N : B-R, method = 'LLM', start = 'R
     elif start == 'Diversity':
         i = DATA(csv(args.dataset))
         random.shuffle(i.rows)
-        d = dendogram(i)
-        points = leafs(d, stop = 4)
-        sorted(points, key = lambda p : chebyshev(i,p))
-
+        d = dendogram(i,stop = 4)
+        points = leafs(d,centroids=[])
+        points = sorted(points, key = lambda p : chebyshev(i,p))
+        for p in points:
+            print(chebyshev(i,p))
         best_points = points[:8]
         rest_points = points[8:]
+
+        print("best of points", chebyshev(i,best_points[0]))
 
         #done, new_done ,todo = WARM_FEW_API(i, args, method = method)
         all = []
@@ -358,8 +361,15 @@ def warm_smo_plus(args, score = lambda B,R,I,N : B-R, method = 'LLM', start = 'R
 
 
             done, new_done, todo = WARM_FEW_API(i, args,  list(todo), list(done), method = method)
+            print("best of new done",chebyshev(i, new_done[0]))
+
+
             all += done + new_done
             k += 2
+        
+    elif name == 'Surrogate':
+        pass
+
 
 
     return _ranked(all)
