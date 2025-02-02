@@ -199,29 +199,29 @@ def warms(args):
       rx=f"random,{last}"
       rxs[rx] = SOME(txt=rx, inits=[chebyshev(d,guess()) for _ in range(repeats)])
       
-      gps = [('UCB_GPM'), ('PI_GPM'), ('EI_GPM')]
-      for guesFaster in [True]:
-        for what in gps:
-            rx = f"{what},{args.last}"
-            rxs[rx] = SOME(txt=rx)
-            for _ in range(repeats):
-                btw(".")
-                rxs[rx].add(chebyshev(d, gpms(args, what)[0]))
-            btw("\n")
+    #   gps = [('UCB_GPM'), ('PI_GPM'), ('EI_GPM')]
+    #   for guesFaster in [True]:
+    #     for what in gps:
+    #         rx = f"{what},{args.last}"
+    #         rxs[rx] = SOME(txt=rx)
+    #         for _ in range(repeats):
+    #             btw(".")
+    #             rxs[rx].add(chebyshev(d, gpms(args, what)[0]))
+    #         btw("\n")
       
       graphs = {'exploit' : [], 'LINEAR/exploit' : [], 'LLM/exploit' : []}
 
-      for  guessFaster in [True]:
-        for what,how in  scoring_policies:
-          the.GuessFaster = guessFaster
-          rx=f"{what},{args.last}"
-          rxs[rx] = SOME(txt=rx)
-          for _ in range(repeats):
-            btw(".")
-            res,data = smo(d,how)
-            rxs[rx].add(chebyshev(d,res[0]))
-            if last == 20 and what in graphs.keys() : graphs[what].append(data)
-        btw("\n")
+    #   for  guessFaster in [True]:
+    #     for what,how in  scoring_policies:
+    #       the.GuessFaster = guessFaster
+    #       rx=f"{what},{args.last}"
+    #       rxs[rx] = SOME(txt=rx)
+    #       for _ in range(repeats):
+    #         btw(".")
+    #         res,data = smo(d,how)
+    #         rxs[rx].add(chebyshev(d,res[0]))
+    #         if last == 20 and what in graphs.keys() : graphs[what].append(data)
+    #     btw("\n")
 
       
       
