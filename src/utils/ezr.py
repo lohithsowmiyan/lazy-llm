@@ -446,9 +446,9 @@ def branch(i:data, region:rows=None, stop=None, rest=None, evals=1, before=None)
   if not stop: random.shuffle(region)
   stop = stop or 2*len(region)**the.N
   rest = rest or []
-  if len(region) > stop:
+  if evals <= stop:
     lefts,rights,left,_  = half(i,region, True, before)
-    return branch(i,lefts, stop, rest+rights, evals+1, left)
+    return branch(i,lefts, stop, rest+rights, evals+1)
   else:
     return region,rest,evals
 
