@@ -38,6 +38,9 @@ class SYNTHETIC():
         self.best = [b[:len(i.cols.x) + self.dff] for b in best]
         self.rest = [r[:len(i.cols.x) + self.dff] for r in rest]
 
+        self.best_wy = best
+        self.rest_wy = rest
+
         self.col_names = i.cols.names
     
         self.Features = [
@@ -193,7 +196,7 @@ class SYNTHETIC():
 
     def get_template_correlation(self):
 
-        table = [[col.txt for col in self.i.cols.x] + ['Class']] + [b + ['Best'] for b in self.best] + [r + ['Rest'] for r in self.rest]
+        table = [[col for col in self.col_names] + ['Class']] + [b + ['Best'] for b in self.best_wy] + [r + ['Rest'] for r in self.rest_wy]
 
         headers = ['S.No', 'Name', 'Type', 'Lowest', 'Highest', 'Unique']
 
@@ -202,7 +205,14 @@ class SYNTHETIC():
         if col.this == NUM 
         else [col.at+1, col.txt, self.meta[col.this], 'N/A', 'N/A', col.has]
         for col in self.i.cols.x
+        ] 
+
+        y_meta  = [['S.No', 'Name', 'Objective']] + [
+            [col.at+1, col.txt, 'Lower is Better' if col.txt[-1] == '-' else 'Higher is Better']
+            for col in self.i.cols.y
         ]
+
+
 
         corr = []
         for col1 in self.i.cols.x:
@@ -211,18 +221,24 @@ class SYNTHETIC():
                 temp.append(correlation(self.i, col1, col2))
             corr.append(temp)
 
-        corr = [['Names'] + table[0][:-1]] +  corr
+        corr = [['Names'] + table[0][:-2]] +  corr
 
         
-       
+
+        
         messages = [
         ("system" , f'''
-        You are given a dataset with several features. The rows has been categorized into "best" and "rest" examples based on their overall performance. Below are the key features and their descriptions from the dataset:
+        You are given a dataset with several features. The rows has been categorized into "best" and "rest" examples based on their overall performance along with the Dependent variable that needs to either maximized or minimized. Below are the key features and their descriptions from the dataset:
         ...
+        Description of Independent Variables
         {rows_to_markdown(new_Features)}
+
+        Description of Dependent Variables
+        {rows_to_markdown(y_meta)}
 
         Correlation between Features:
         {rows_to_markdown(corr)}
+               
         '''),
         ("human",  f'''
         **Given Examples:**
@@ -231,8 +247,8 @@ class SYNTHETIC():
         ),
         ("human",  f'''
         **Task:**
-        1. **Generate Two New Examples that are Better**: These should outperform the given "Best" examples by optimizing the relevant features to better combinations.
-        2. **Generate Two New Examples that are Poorer**: These should underperform the given "Rest" examples by modifying the relevant features to worse combinations.
+        1. **Generate a New Example that is Better**: These should outperform the given "Best" examples by optimizing the relevant features to better combinations.
+        2. **Generate a New Examples that is Poorer**: These should underperform the given "Rest" examples by modifying the relevant features to worse combinations.
 
         Consider the interdependencies between features, and ensure that the generated examples follow logical consistency within the dataset's context.
         **Return the output in the same mardown structure: !Just the output table alone and Don't add the input rows to the table**
