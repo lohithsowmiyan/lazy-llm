@@ -10,6 +10,8 @@ import warnings
 import json
 import time
 from src.models.smo import SMO
+import numpy as np
+from sklearn.cluster import KMeans
 
 def _post_process(result : str) -> dict:
     "Converts the output from the model to usable"
@@ -42,6 +44,88 @@ def _markdown_to_rows(markdown):
             rest.append([float(val) if val.replace('.', '', 1).isdigit() else val for val in r[:-1]])        
         
     return best,rest
+def calculate_mean(example_list):
+    "Calculate the mean of a list of rows"
+
+    n_examples = len(example_list)
+    n_features = len(example_list[0])
+    
+    mean = [0] * n_features
+    for example in example_list:
+        for i in range(n_features):
+            mean[i] += example[i]
+    
+    mean = [x / n_examples for x in mean]
+    return mean
+
+def calculate_mean_or_mode(example_list, is_numeric):
+    "Calculate the mean for numeric columns and mode for symbolic columns."
+    n_features = len(example_list[0])
+    
+    result = [0] * n_features
+    for i in range(n_features):
+        column = [example[i] for example in example_list if example[i] != '?']  # Ignore missing values
+        if len(column) == 0:  # If all values in the column are missing
+            result[i] = '?'  # Handle case where all values are missing
+            continue
+
+        if is_numeric[i] == 1:  # If the column is numeric
+            column = list(map(float, column))  # Convert to float
+            result[i] = sum(column) / len(column)
+        elif is_numeric[i] == 0:  # If the column is symbolic
+            result[i] = mode(column) if column else '?'  # Use mode for symbolic data
+    return result
+
+def linear_extrapolation(i, done, scale=0.5):
+    """Perform linear extrapolation to generate better and worse examples."""
+    
+    cut = int(.5 + len(done) ** 0.5)
+    best = clone(i, done[:cut]).rows
+    rest = clone(i, done[cut:]).rows
+
+    dff = 0
+
+    if(len(i.cols.names) != len(i.cols.x) + len(i.cols.y)):
+        dff = len(i.cols.names)  - len(i.cols.x) - len(i.cols.y)
+
+    best = [b[:len(i.cols.x) + dff] for b in best]
+    rest = [r[:len(i.cols.x) + dff] for r in rest]
+
+    # Check if each column is numeric or symbolic
+    is_numeric = [0] * len(best[0])
+
+
+    find = lambda col, i: next((c for c in i.cols.x if c.txt == col), None)
+
+    names = i.cols.names[:len(i.cols.x) + dff]
+
+    for _, col in enumerate(names):
+        if col in [x.txt for x in i.cols.x]:
+            c = find(col, i)
+            is_numeric[_] = 1 if c.this == NUM else 0
+        else:
+            is_numeric[_] = 2
+
+    # Calculate mean for numeric columns and mode for symbolic ones
+    mean_best = calculate_mean_or_mode(best, is_numeric)
+    mean_rest = calculate_mean_or_mode(rest, is_numeric)
+
+    # Generate better and worse examples based on column type
+    better_examples = [
+        [
+            float(b[idx] + scale * (mean_best[idx] - mean_rest[idx])) if is_numeric[idx] == 1 and b[idx] != '?' else mean_best[idx]
+            for idx in range(len(b))
+        ] for b in best
+    ]
+    worse_examples = [
+        [
+            float(r[idx] - scale * (mean_best[idx] - mean_rest[idx])) if is_numeric[idx] == 1 and r[idx] != '?' else mean_rest[idx]
+            for idx in range(len(r))
+        ] for r in rest
+    ]
+
+
+    return better_examples + worse_examples
 
 
 def WARM_FEW_API(i: data, args, method = 'LLMExtra'):
@@ -118,56 +202,7 @@ def WARM_FEW_API(i: data, args, method = 'LLMExtra'):
         
         return best,rest
 
-    def linear_extrapolation( done, scale=0.5):
-        """Perform linear extrapolation to generate better and worse examples."""
-        
-        cut = int(.5 + len(done) ** 0.5)
-        best = clone(i, done[:cut]).rows
-        rest = clone(i, done[cut:]).rows
-
-        dff = 0
-
-        if(len(i.cols.names) != len(i.cols.x) + len(i.cols.y)):
-            dff = len(i.cols.names)  - len(i.cols.x) - len(i.cols.y)
-
-        best = [b[:len(i.cols.x) + dff] for b in best]
-        rest = [r[:len(i.cols.x) + dff] for r in rest]
-
-        # Check if each column is numeric or symbolic
-        is_numeric = [0] * len(best[0])
-
-
-        find = lambda col, i: next((c for c in i.cols.x if c.txt == col), None)
-
-        names = i.cols.names[:len(i.cols.x) + dff]
-
-        for _, col in enumerate(names):
-            if col in [x.txt for x in i.cols.x]:
-                c = find(col, i)
-                is_numeric[_] = 1 if c.this == NUM else 0
-            else:
-                is_numeric[_] = 2
-
-        # Calculate mean for numeric columns and mode for symbolic ones
-        mean_best = calculate_mean_or_mode(best, is_numeric)
-        mean_rest = calculate_mean_or_mode(rest, is_numeric)
-
-        # Generate better and worse examples based on column type
-        better_examples = [
-            [
-                float(b[idx] + scale * (mean_best[idx] - mean_rest[idx])) if is_numeric[idx] == 1 and b[idx] != '?' else mean_best[idx]
-                for idx in range(len(b))
-            ] for b in best
-        ]
-        worse_examples = [
-            [
-                float(r[idx] - scale * (mean_best[idx] - mean_rest[idx])) if is_numeric[idx] == 1 and r[idx] != '?' else mean_rest[idx]
-                for idx in range(len(r))
-            ] for r in rest
-        ]
-
-
-        return better_examples + worse_examples
+    
 
     # def linear_extrapolation(done, scale=0.5):
     #     "Perform linear extrapolation to generate better and worse examples."
@@ -206,7 +241,7 @@ def WARM_FEW_API(i: data, args, method = 'LLMExtra'):
         
 
         sythetic = SYNTHETIC(i, best, rest)
-        messages = sythetic.get_template_markdown()
+        messages = sythetic.get_template_correlation()
         #print(messages)
 
       
@@ -220,7 +255,7 @@ def WARM_FEW_API(i: data, args, method = 'LLMExtra'):
         
     def n_examples(todo:rows, done:rows):
         "get the 4 start samples ready for active learning"
-        results = _synthesise(done) if method == 'LLM' else linear_extrapolation(done)
+        results = _synthesise(done) if method == 'LLM' else linear_extrapolation(i,done)
 
         dff = 0
 
@@ -280,7 +315,7 @@ def WARM_FEW_API(i: data, args,  todo:rows, done:rows, method = 'LLMExtra', isco
         
     def n_examples(todo:rows, done:rows):
         "get the 4 start samples ready for active learning"
-        results = _synthesise(done) if method == 'LLM' else linear_extrapolation(done)
+        results = _synthesise(done) if method == 'LLM' else linear_extrapolation(i,done)
 
         dff = 0
 
@@ -356,27 +391,44 @@ def warm_smo_plus(args, score = lambda B,R,I,N : B-R, method = 'LLM', start = 'R
     elif start == 'Diversity':
         i = DATA(csv(args.dataset))
         random.shuffle(i.rows)
+
         d = dendogram(i,stop = 4)
         points = leafs(d,centroids=[])
+        
         points = sorted(points, key = lambda p : chebyshev(i,p))
-        for p in points:
-            print(chebyshev(i,p))
-        best_points = points[:8]
-        rest_points = points[8:]
 
-        print("best of points", chebyshev(i,best_points[0]))
+        # X = np.array(i.rows)
+        
+
+        # kmeans = KMeans(n_clusters=10,  n_init=10)
+        # clusters = kmeans.fit_predict(X)
+
+        # centroids = kmeans.cluster_centers_
+        # points = centroid_rows = np.array([X[np.argmin(np.linalg.norm(X - centroid, axis=1))] for centroid in centroids])
+        
+
+        # points = sorted(points, key = lambda p : chebyshev(i,p))
+        # for p in points:
+        #     print(chebyshev(i,p))
+        best_points = points[:len(points)//2]
+        rest_points = points[len(points)//2:]
+
+        
+
+
+        #print("best of points", chebyshev(i,best_points[0]))
 
         #done, new_done ,todo = WARM_FEW_API(i, args, method = method)
         all = []
         k = 0
-        while k  < 28:
+        while k  < 30:
             done = random.choices(best_points, k = 2) + random.choices(rest_points, k= 2)
             done = set((tuple(_) for _ in done))
             todo = set((tuple(_) for _ in i.rows)) - done
 
 
             done, new_done, todo = WARM_FEW_API(i, args,  list(todo), list(done), method = method)
-            print("best of new done",chebyshev(i, new_done[0]))
+            #print("best of new done",chebyshev(i, new_done[0]))
 
 
             all += done + new_done
@@ -476,13 +528,13 @@ def warm_smo_plus(args, score = lambda B,R,I,N : B-R, method = 'LLM', start = 'R
             todo = sorted(todo[:100], key=key, reverse=True) + todo[100:]
             new_rest.append(todo[0])
 
-            for _ in new_best + new_rest:
-                print("chebyshev of points", chebyshev(i,_))
+            # for _ in new_best + new_rest:
+            #     print("chebyshev of points", chebyshev(i,_))
            
 
             done, new_done, todo = WARM_FEW_API(i, args, todo, sorted(new_best + new_rest, key = lambda p : chebyshev(i,p)), method=method, iscombined=False)
-            if new_done:
-                print("extra best",chebyshev(i,new_done[0]))
+            # if new_done:
+            #     print("extra best",chebyshev(i,new_done[0]))
             # done += new_done  # Add new_done rows to done
             # todo = [row for row in todo if row not in new_done]  # Remove new_done from todo
 
