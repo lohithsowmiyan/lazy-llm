@@ -1,10 +1,10 @@
 import pandas as pd
 
 # Load the CSV file
-file_path = 'data/tao_og/exastencils.csv'
-df = pd.read_csv(file_path, delimiter = ';')
+file_path = 'data/misc/auto93.csv'
+df = pd.read_csv(file_path)
 
-df = df.drop(columns = ['root'])
+df = df.drop(columns = ['HpX'])
 
 
 

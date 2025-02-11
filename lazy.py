@@ -177,10 +177,10 @@ def warms(args):
     e = math.exp(1)
     rxs={}
     rxs["baseline"] = SOME(txt=f"baseline,{len(d.rows)}",inits=[chebyshev(d,row) for row in d.rows])
-    rx=f"rrp,{int(0.5+math.log(len(d.rows),2)+1)}"
-    rxs[rx] = SOME(txt=rx)
-    for _ in range(repeats):
-        best,_,_ = branch(d,d.rows,4); rxs[rx].add(chebyshev(d,best[0]))
+    # rx=f"rrp,{int(0.5+math.log(len(d.rows),2)+1)}"
+    # rxs[rx] = SOME(txt=rx)
+    # for _ in range(repeats):
+    #     best,_,_ = branch(d,d.rows,4); rxs[rx].add(chebyshev(d,best[0]))
 
     scoring_policies = [
         ('exploit', lambda B, R, I, N: exploit(B, R)),
@@ -193,13 +193,13 @@ def warms(args):
 
     both = lambda B,R, I, N: explore(B, R) if I/N < 0.5 else exploit(B, R)
     
-    for last in [20,25,30]:
+    for last in [20,30,40,50,60,70,80,90,100]:
       args.last= last
       guess = lambda : clone(d,random.choices(d.rows, k=last),rank=True).rows[0]
       rx=f"random,{last}"
       rxs[rx] = SOME(txt=rx, inits=[chebyshev(d,guess()) for _ in range(repeats)])
       
-      gps = [('UCB_GPM'), ('PI_GPM'), ('EI_GPM')]
+      gps = [('UCB_GPM')]
       for guesFaster in [True]:
         for what in gps:
             rx = f"{what},{args.last}"
@@ -242,18 +242,20 @@ def warms(args):
     #                     rxs[rx].add(chebyshev(d,res[0]))
     #                     print("Best Row : ", res[0], "chebys :" , chebyshev(d, res[0]))
     #                 if last == 20 and f'{start}/{what}' in graphs.keys(): graphs[f'{start}/{what}'].append(data)
-    #         btw("\n")
+    #         btw("\n")pip
 
+        
+        for guessFaster in [True]:
+            for start in ['LLM']:
+                the.GuessFaster = guessFaster
+                rx = f"{start}++,{args.last}"
+                rxs[rx] = SOME(txt = rx)
+                for _ in range(repeats):
+                    btw(".")
+                    res = warm_smo_plus(args, both, method = start, start = 'Diversity')
+                    rxs[rx].add(chebyshev(d,res[0]))
 
-    for guessFaster in [True]:
-        for start in ['LINEAR']:
-            the.GuessFaster = guessFaster
-            rx = f"{start}++,{30}"
-            rxs[rx] = SOME(txt = rx)
-            for _ in range(repeats):
-                btw(".")
-                res = warm_smo_plus(args, both, method = start, start = 'Diversity')
-                rxs[rx].add(chebyshev(d,res[0]))
+        if last >= 50: break
                     
 
        

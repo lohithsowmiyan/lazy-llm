@@ -302,6 +302,7 @@ def WARM_FEW_API(i: data, args,  todo:rows, done:rows, method = 'LLMExtra', isco
 
       
         result = model.invoke(messages).content
+        time.sleep(5)
         #print(result)
         
         best, rest = _markdown_to_rows(result)
@@ -353,37 +354,41 @@ def warm_smo_plus(args, score = lambda B,R,I,N : B-R, method = 'LLM', start = 'R
         i = DATA(csv(args.dataset))
         random.shuffle(i.rows)
 
-        # points = random.choices(i.rows, k = 20)
-        # sorted(points, key = lambda p : chebyshev(i,p))
+        k = int(args.last * 0.6)
+        rem = args.last - k
 
-        # best_points = points[:10]
-        # rest_points = points[10:]
+        points = random.choices(i.rows, k = k)
+        sorted(points, key = lambda p : chebyshev(i,p))
 
-        # #done, new_done ,todo = WARM_FEW_API(i, args, method = method)
-        # all = []
-        # k = 0
-        # while k  < 20:
-        #     done = random.choices(best_points, k = 2) + random.choices(rest_points, k= 2)
-        #     done = set((tuple(_) for _ in done))
-        #     todo = set((tuple(_) for _ in i.rows)) - done
+        best_points = points[:k/2]
+        rest_points = points[k/2:]
 
-
-        #     done, new_done, todo = WARM_FEW_API(i, args,  list(todo), list(done), method = method)
-        #     all += done + new_done
-        #     k += 2
-
-
+        #done, new_done ,todo = WARM_FEW_API(i, args, method = method)
         all = []
         k = 0
-        while k < 20:
-            done = random.choices(i.rows, k=4)
+        while k  < rem:
+            done = random.choices(best_points, k = 2) + random.choices(rest_points, k= 2)
             done = set((tuple(_) for _ in done))
             todo = set((tuple(_) for _ in i.rows)) - done
 
+
             done, new_done, todo = WARM_FEW_API(i, args,  list(todo), list(done), method = method)
-            print("best of new done",chebyshev(i, new_done[0]))
+
             all += done + new_done
-            k += 2
+            k += 1
+
+
+        # all = []
+        # k = 0
+        # while k < 20:
+        #     done = random.choices(i.rows, k=4)
+        #     done = set((tuple(_) for _ in done))
+        #     todo = set((tuple(_) for _ in i.rows)) - done
+
+        #     done, new_done, todo = WARM_FEW_API(i, args,  list(todo), list(done), method = method)
+        #     print("best of new done",chebyshev(i, new_done[0]))
+        #     all += done + new_done
+        #     k += 2
 
 
          
