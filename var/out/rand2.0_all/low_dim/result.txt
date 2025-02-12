@@ -1,13 +1,13 @@
 RANK         0           1           2           3           4           5           6            7           8           9
-EI_GPM      40          13          20           7          13                                                             
-UCB_GPM     40          27           7           7          13                                                             
-rrp          7                      20          13           7          13           7           20           7            
-exploit     67           7           7           7           7                                                             
-LLM++       80           7                                   7                                                             
-random       7          33          27          13           7           7                                                 
-PI_GPM      40          33           7           7           7                                                             
-baseline                                        20           7           7          27            7           7           7
-explore     27          33          13           7           7           7                                                 
+EI_GPM      43          14          21           7          14                                                             
+UCB_GPM     43          29           7           7          14                                                             
+rrp          7                      21          14           7          14           7           21           7            
+exploit     71           7           7           7           7                                                             
+LLM++       86           7                                   7                                                             
+random       7          36          29          14           7           7                                                 
+PI_GPM      43          36           7           7           7                                                             
+baseline                                        21           7           7          29            7           7           7
+explore     29          36          14           7           7           7                                                 
 #                                                                                                                       
 #EVALS                                                                                                                  
 RANK               0           1           2           3           4           5           6            7           8           9
