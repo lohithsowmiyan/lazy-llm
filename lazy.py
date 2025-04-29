@@ -11,7 +11,7 @@ from src.models.few import FEW
 from src.models.smo import SMO
 from src.models.zero import ZERO
 from src.models.warm_start import warm_smo
-from src.models.gpm import ucbs,pis,eis
+from src.models.gpm import gpms
 
 
 def explore(B, R):
@@ -194,14 +194,14 @@ def warms(args):
       rx=f"random,{last}"
       rxs[rx] = SOME(txt=rx, inits=[chebyshev(d,guess()) for _ in range(repeats)])
       
-      gps = [('UCB_GPM', ucbs(args)), ('PI_GPM', pis(args)), ('EI_GPM', eis(args))]
+      gps = ['UCB_GPM', 'PI_GPM', 'EI_GPM']
       for guesFaster in [True]:
-        for what, how in gps:
+        for what in gps:
             rx = f"{what},{the.Last}"
             rxs[rx] = SOME(txt=rx)
             for _ in range(repeats):
                 btw(".")
-                rxs[rx].add(d2h(d, how[0]))
+                rxs[rx].add(chebyshev(d, gpms(args, what)[0]))
             btw("\n")
       
       graphs = {'exploit' : [], 'LINEAR/exploit' : [], 'LLM/exploit' : []}
