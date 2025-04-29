@@ -12,6 +12,7 @@ from src.models.smo import SMO
 from src.models.zero import ZERO
 from src.models.warm_start import warm_smo
 from src.models.gpm import gpms
+from src.models.tpe import TPE
 
 
 def explore(B, R):
@@ -189,20 +190,27 @@ def warms(args):
     ]
     
     for last in [20,25,30]:
-      the.Last= last
+      args.last= last
       guess = lambda : clone(d,random.choices(d.rows, k=last),rank=True).rows[0]
       rx=f"random,{last}"
       rxs[rx] = SOME(txt=rx, inits=[chebyshev(d,guess()) for _ in range(repeats)])
       
-      gps = ['UCB_GPM', 'PI_GPM', 'EI_GPM']
+    #   gps = ['UCB_GPM', 'PI_GPM', 'EI_GPM']
+    #   for guesFaster in [True]:
+    #     for what in gps:
+    #         rx = f"{what},{last}"
+    #         rxs[rx] = SOME(txt=rx)
+    #         for _ in range(repeats):
+    #             btw(".")
+    #             rxs[rx].add(chebyshev(d, gpms(args, what)[0]))
+    #         btw("\n")
       for guesFaster in [True]:
-        for what in gps:
-            rx = f"{what},{the.Last}"
-            rxs[rx] = SOME(txt=rx)
-            for _ in range(repeats):
-                btw(".")
-                rxs[rx].add(chebyshev(d, gpms(args, what)[0]))
-            btw("\n")
+        rx = f"TPE,{last}"
+        rxs[rx] = SOME(txt=rx)
+        for _ in range(repeats):
+            btw(".")
+            rxs[rx].add(TPE(args))
+        btw("\n")
       
       graphs = {'exploit' : [], 'LINEAR/exploit' : [], 'LLM/exploit' : []}
 
@@ -220,23 +228,23 @@ def warms(args):
 
       
       
-      for  guessFaster in [True]:
-        for start in ['LLM']:
-            for what,how in  scoring_policies:
-                the.GuessFaster = guessFaster
-                rx=f"{start}/{what},{the.Last}"
-                rxs[rx] = SOME(txt=rx)
-                for _ in range(repeats):
-                    btw(".")
-                    #time.sleep(10)
-                    if start == 'LLM' and len(d.rows) < 50:
-                        res,data = smo(d,how) # this heuristic works because LLM warm start performs poorly across all small datasets
-                        rxs[rx].add(chebyshev(d,res[0]))
-                    else :
-                        res, data = warm_smo(args,how,method = start)
-                        rxs[rx].add(chebyshev(d,res[0]))
-                    if last == 20 and f'{start}/{what}' in graphs.keys(): graphs[f'{start}/{what}'].append(data)
-            btw("\n")
+    #   for  guessFaster in [True]:
+    #     for start in ['LLM']:
+    #         for what,how in  scoring_policies:
+    #             the.GuessFaster = guessFaster
+    #             rx=f"{start}/{what},{the.Last}"
+    #             rxs[rx] = SOME(txt=rx)
+    #             for _ in range(repeats):
+    #                 btw(".")
+    #                 #time.sleep(10)
+    #                 if start == 'LLM' and len(d.rows) < 50:
+    #                     res,data = smo(d,how) # this heuristic works because LLM warm start performs poorly across all small datasets
+    #                     rxs[rx].add(chebyshev(d,res[0]))
+    #                 else :
+    #                     res, data = warm_smo(args,how,method = start)
+    #                     rxs[rx].add(chebyshev(d,res[0]))
+    #                 if last == 20 and f'{start}/{what}' in graphs.keys(): graphs[f'{start}/{what}'].append(data)
+    #         btw("\n")
 
        
 
