@@ -228,23 +228,25 @@ def warms(args):
 
       
       
-    #   for  guessFaster in [True]:
-    #     for start in ['LLM']:
-    #         for what,how in  scoring_policies:
-    #             the.GuessFaster = guessFaster
-    #             rx=f"{start}/{what},{the.Last}"
-    #             rxs[rx] = SOME(txt=rx)
-    #             for _ in range(repeats):
-    #                 btw(".")
-    #                 #time.sleep(10)
-    #                 if start == 'LLM' and len(d.rows) < 50:
-    #                     res,data = smo(d,how) # this heuristic works because LLM warm start performs poorly across all small datasets
-    #                     rxs[rx].add(chebyshev(d,res[0]))
-    #                 else :
-    #                     res, data = warm_smo(args,how,method = start)
-    #                     rxs[rx].add(chebyshev(d,res[0]))
-    #                 if last == 20 and f'{start}/{what}' in graphs.keys(): graphs[f'{start}/{what}'].append(data)
-    #         btw("\n")
+      for  guessFaster in [True]:
+        for start in ['gemini','gpt']:
+            args.llm = start
+            for what,how in  scoring_policies:
+                the.GuessFaster = guessFaster
+                rx=f"{start}/{what},{the.Last}"
+                rxs[rx] = SOME(txt=rx)
+                for _ in range(repeats):
+                    btw(".")
+                    #time.sleep(10)
+                    if start == 'LLM' and len(d.rows) < 50:
+                        res,data = smo(d,how) # this heuristic works because LLM warm start performs poorly across all small datasets
+                        rxs[rx].add(chebyshev(d,res[0]))
+                    else :
+                        if args.llm == 'gpt': time.sleep(10)
+                        res, data = warm_smo(args,how,method = start)
+                        rxs[rx].add(chebyshev(d,res[0]))
+                    if last == 20 and f'{start}/{what}' in graphs.keys(): graphs[f'{start}/{what}'].append(data)
+            btw("\n")
 
        
 
