@@ -195,15 +195,15 @@ def warms(args):
       rx=f"random,{last}"
       rxs[rx] = SOME(txt=rx, inits=[chebyshev(d,guess()) for _ in range(repeats)])
       
-    #   gps = ['UCB_GPM', 'PI_GPM', 'EI_GPM']
-    #   for guesFaster in [True]:
-    #     for what in gps:
-    #         rx = f"{what},{last}"
-    #         rxs[rx] = SOME(txt=rx)
-    #         for _ in range(repeats):
-    #             btw(".")
-    #             rxs[rx].add(chebyshev(d, gpms(args, what)[0]))
-    #         btw("\n")
+      gps = ['UCB_GPM', 'PI_GPM', 'EI_GPM']
+      for guesFaster in [True]:
+        for what in gps:
+            rx = f"{what},{last}"
+            rxs[rx] = SOME(txt=rx)
+            for _ in range(repeats):
+                btw(".")
+                rxs[rx].add(chebyshev(d, gpms(args, what)[0]))
+            btw("\n")
       for guesFaster in [True]:
         rx = f"TPE,{last}"
         rxs[rx] = SOME(txt=rx)
@@ -217,7 +217,7 @@ def warms(args):
       for  guessFaster in [True]:
         for what,how in  scoring_policies:
           the.GuessFaster = guessFaster
-          rx=f"{what},{the.Last}"
+          rx=f"{what},{args.last}"
           rxs[rx] = SOME(txt=rx)
           for _ in range(repeats):
             btw(".")
@@ -233,7 +233,7 @@ def warms(args):
             args.llm = start
             for what,how in  scoring_policies:
                 the.GuessFaster = guessFaster
-                rx=f"{start}/{what},{the.Last}"
+                rx=f"{start}/{what},{args.last}"
                 rxs[rx] = SOME(txt=rx)
                 for _ in range(repeats):
                     btw(".")
