@@ -80,18 +80,18 @@ docs/%.html : %.py ## .py --> .html
 
 	
 
-WARMS= $(subst data/config,var/out/smos,$(wildcard data/config/*.csv)) \
-      $(subst data/misc,var/out/smos,$(wildcard data/misc/*.csv)) \
-      $(subst data/process,var/out/smos,$(wildcard data/process/*.csv)) \
-      $(subst data/hpo,var/out/smos,$(wildcard data/hpo/*.csv))
+WARMS= $(subst data/config,var/out/warms2,$(wildcard data/config/*.csv)) \
+      $(subst data/misc,var/out/warms2,$(wildcard data/misc/*.csv)) \
+      $(subst data/process,var/out/warms2,$(wildcard data/process/*.csv)) \
+      $(subst data/hpo,var/out/warms2,$(wildcard data/hpo/*.csv))
 
-var/out/warms/%.csv : data/config/%.csv  ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
-var/out/warms/%.csv : data/misc/%.csv    ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
-var/out/warms/%.csv : data/process/%.csv ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
-var/out/warms/%.csv : data/hpo/%.csv     ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
+var/out/warms2/%.csv : data/config/%.csv  ; echo $<; python3 ./lazy.py  --model warms  --dataset $< | tee $@
+var/out/warms2/%.csv : data/misc/%.csv    ; echo $<; python3 ./lazy.py  --model warms  --dataset $< | tee $@
+var/out/warms2/%.csv : data/process/%.csv ; echo $<; python3 ./lazy.py  --model warms  --dataset $< | tee $@
+var/out/warms2/%.csv : data/hpo/%.csv     ; echo $<; python3 ./lazy.py  --model warms  --dataset $< | tee $@
 
 RQ123: 
-	mkdir -p var/out/smos
+	mkdir -p var/out/warms2
 	$(MAKE) -j $(SMOS)
 
 
