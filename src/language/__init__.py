@@ -2,7 +2,8 @@ from src.language.llms import Local_LLM, API_LLM, LLM
 
 api_model_path = {
     "gemini" : "gemini-1.5-flash",
-}
+    "gpt" : "gpt-4o"
+ }
 
 local_model_path = {
     "llama2-7b" : "meta-llama/Llama-2-7b-chat-hf",
