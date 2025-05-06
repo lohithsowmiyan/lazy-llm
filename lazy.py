@@ -226,8 +226,6 @@ def warms(args):
             if last == 20 and what in graphs.keys() : graphs[what].append(data)
         btw("\n")
 
-      
-      
       for  guessFaster in [True]:
         for start in ['gemini','gpt']:
             args.llm = start
