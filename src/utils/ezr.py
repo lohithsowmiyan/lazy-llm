@@ -15,7 +15,7 @@
       -H --Half    #rows for searching for poles  = 128    
       -k --k       bayes low frequency hack #1    = 1    
       -l --label   initial number for labelling    = 4    
-      -L --Last    max allow #labelling            = 30    
+      -L --Last    max allow #labelling            = 40    
       -m --m       bayes low frequency hack #2    = 2    
       -n --n       tinyN                          = 12    
       -N --N       smallN                         = 0.5    

@@ -230,7 +230,7 @@ def warm_smo(args, score=lambda B,R,I,N: B-R, method ='LLM'):
 
   def _smo1(todo:rows, done:rows, most: row) -> rows:
     "Guess the `top`  unlabeled row, add that to `done`, resort `done`, and repeat"
-    for k in range(args.last - args.label):
+    for k in range(the.Last - the.label):
       if len(todo) < 3: break
       top,*todo = _guess(todo, done)
       #print(d2h(i,top))
