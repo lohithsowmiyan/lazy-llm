@@ -14,6 +14,7 @@ from src.models.warm_start import warm_smo,warm_smo_plus
 from src.models.cluster import density
 from src.models.gpm import gpms
 from math import exp
+from src.models.tpe import TPE
 
 
 def explore(B, R):
@@ -208,6 +209,14 @@ def warms(args):
                 btw(".")
                 rxs[rx].add(chebyshev(d, gpms(args, what)[0]))
             btw("\n")
+      for guesFaster in [True]:
+        rx = f"TPE,{last}"
+        rxs[rx] = SOME(txt=rx)
+        for _ in range(repeats):
+            btw(".")
+            rxs[rx].add(TPE(args))
+        btw("\n")
+      
       
       graphs = {'exploit' : [], 'LINEAR/exploit' : [], 'LLM/exploit' : []}
 
@@ -255,7 +264,6 @@ def warms(args):
                     res = warm_smo_plus(args, both, method = start, start = 'Diversity')
                     rxs[rx].add(chebyshev(d,res[0]))
 
-        if last >= 50: break
                     
 
        
