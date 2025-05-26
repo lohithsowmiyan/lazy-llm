@@ -194,7 +194,7 @@ def warms(args):
 
     both = lambda B,R, I, N: explore(B, R) if I/N < 0.5 else exploit(B, R)
     
-    for last in [20,30,40,50,60,70,80,90,100]:
+    for last in [20,30]:
       args.last= last
       guess = lambda : clone(d,random.choices(d.rows, k=last),rank=True).rows[0]
       rx=f"random,{last}"

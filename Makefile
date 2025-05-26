@@ -107,17 +107,19 @@ demo:
 
 FILES = data/config/SS-C.csv data/config/SS-E.csv data/config/SS-G.csv data/misc/auto93.csv data/hpo/healthCloseIsses12mths0001-hard.csv
 
-DIMS = $(patsubst data/config/%.csv,var/out/heatmap/low_dim/%.csv,$(filter data/config/%.csv,$(FILES)))  \
-       $(patsubst data/misc/%.csv,var/out/heatmap/low_dim/%.csv,$(filter data/misc/%.csv,$(FILES))) \
-	   $(patsubst data/hpo/%.csv,var/out/heatmap/low_dim/%.csv,$(filter data/hpo/%.csv,$(FILES)))
+WARMS= $(subst data/config,var/out/warms2,$(wildcard data/config/*.csv)) \
+      $(subst data/misc,var/out/warms2,$(wildcard data/misc/*.csv)) \
+      $(subst data/process,var/out/warms2,$(wildcard data/process/*.csv)) \
+      $(subst data/hpo,var/out/warms2,$(wildcard data/hpo/*.csv))
 
-var/out/heatmap/low_dim/%.csv: data/config/%.csv ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
-var/out/heatmap/low_dim/%.csv: data/misc/%.csv ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
-var/out/heatmap/low_dim/%.csv: data/hpo/%.csv ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
+var/out/warms2/%.csv : data/config/%.csv  ; echo $<; python3 ./lazy.py  --model warms  --dataset $< | tee $@
+var/out/warms2/%.csv : data/misc/%.csv    ; echo $<; python3 ./lazy.py  --model warms  --dataset $< | tee $@
+var/out/warms2/%.csv : data/process/%.csv ; echo $<; python3 ./lazy.py  --model warms  --dataset $< | tee $@
+var/out/warms2/%.csv : data/hpo/%.csv     ; echo $<; python3 ./lazy.py  --model warms  --dataset $< | tee $@
 
-demo:
-	mkdir -p var/out/heatmap/low_dim
-	$(MAKE) -j $(DIMS)
+RQ123: 
+	mkdir -p var/out/warms2
+	$(MAKE) -j $(WARMS)
 	
 
 

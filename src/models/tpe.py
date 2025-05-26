@@ -31,7 +31,8 @@ def TPE(args):
         algo=tpe.suggest,
         max_evals=args.last,
         trials=trials,
-    )
+        show_progressbar=False    
+        )
 
     # Best index and corresponding values
     best_idx = best['index']
