@@ -13,6 +13,7 @@ from src.models.zero import ZERO
 from src.models.warm_start import warm_smo
 from src.models.gpm import gpms
 from src.models.tpe import TPE
+from src.models.diffevol2 import diffevols
 
 
 def explore(B, R):
@@ -189,28 +190,28 @@ def warms(args):
         #('ExpProgressive', lambda B, R, I, N: m(I, N, 0) * exploit(B,R) + (1 - m(I, N, 0)) * explore(B,R))
     ]
     
-    for last in [20,25,30]:
+    for last in [20,25,30,100,200]:
       args.last= last
       guess = lambda : clone(d,random.choices(d.rows, k=last),rank=True).rows[0]
       rx=f"random,{last}"
       rxs[rx] = SOME(txt=rx, inits=[chebyshev(d,guess()) for _ in range(repeats)])
       
-      gps = ['UCB_GPM', 'PI_GPM', 'EI_GPM']
-      for guesFaster in [True]:
-        for what in gps:
-            rx = f"{what},{last}"
-            rxs[rx] = SOME(txt=rx)
-            for _ in range(repeats):
-                btw(".")
-                rxs[rx].add(chebyshev(d, gpms(args, what)[0]))
-            btw("\n")
-      for guesFaster in [True]:
-        rx = f"TPE,{last}"
-        rxs[rx] = SOME(txt=rx)
-        for _ in range(repeats):
-            btw(".")
-            rxs[rx].add(TPE(args))
-        btw("\n")
+    #   gps = ['UCB_GPM', 'PI_GPM', 'EI_GPM']
+    #   for guesFaster in [True]:
+    #     for what in gps:
+    #         rx = f"{what},{last}"
+    #         rxs[rx] = SOME(txt=rx)
+    #         for _ in range(repeats):
+    #             btw(".")
+    #             rxs[rx].add(chebyshev(d, gpms(args, what)[0]))
+    #         btw("\n")
+    #   for guesFaster in [True]:
+    #     rx = f"TPE,{last}"
+    #     rxs[rx] = SOME(txt=rx)
+    #     for _ in range(repeats):
+    #         btw(".")
+    #         rxs[rx].add(TPE(args))
+    #     btw("\n")
       
       graphs = {'exploit' : [], 'LINEAR/exploit' : [], 'LLM/exploit' : []}
 
@@ -226,25 +227,37 @@ def warms(args):
             if last == 20 and what in graphs.keys() : graphs[what].append(data)
         btw("\n")
 
-      for  guessFaster in [True]:
-        for start in ['gemini','gpt']:
-            args.llm = start
-            for what,how in  scoring_policies:
-                the.GuessFaster = guessFaster
-                rx=f"{start}/{what},{args.last}"
-                rxs[rx] = SOME(txt=rx)
-                for _ in range(repeats):
-                    btw(".")
-                    #time.sleep(10)
-                    if start == 'LLM' and len(d.rows) < 50:
-                        res,data = smo(d,how) # this heuristic works because LLM warm start performs poorly across all small datasets
-                        rxs[rx].add(chebyshev(d,res[0]))
-                    else :
-                        if args.llm == 'gpt': time.sleep(10)
-                        res, data = warm_smo(args,how,method = start)
-                        rxs[rx].add(chebyshev(d,res[0]))
-                    if last == 20 and f'{start}/{what}' in graphs.keys(): graphs[f'{start}/{what}'].append(data)
+    #   for  guessFaster in [True]:
+    #     for start in ['gemini','gpt']:
+    #         args.llm = start
+    #         for what,how in  scoring_policies:
+    #             the.GuessFaster = guessFaster
+    #             rx=f"{start}/{what},{args.last}"
+    #             rxs[rx] = SOME(txt=rx)
+    #             for _ in range(repeats):
+    #                 btw(".")
+    #                 #time.sleep(10)
+    #                 if start == 'LLM' and len(d.rows) < 50:
+    #                     res,data = smo(d,how) # this heuristic works because LLM warm start performs poorly across all small datasets
+    #                     rxs[rx].add(chebyshev(d,res[0]))
+    #                 else :
+    #                     if args.llm == 'gpt': time.sleep(10)
+    #                     res, data = warm_smo(args,how,method = start)
+    #                     rxs[rx].add(chebyshev(d,res[0]))
+    #                 if last == 20 and f'{start}/{what}' in graphs.keys(): graphs[f'{start}/{what}'].append(data)
+    #         btw("\n")
+
+        for guesFaster in [True]:
+            args.last = last
+            rx = f"DEHB,{last}"
+            rxs[rx] = SOME(txt=rx)
+            for _ in range(repeats):
+                btw(".")
+                rxs[rx].add(diffevols(args)[0])
             btw("\n")
+    
+
+
 
        
 
