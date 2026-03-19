@@ -80,32 +80,9 @@ docs/%.html : %.py ## .py --> .html
 
 	
 
-WARMS= $(subst data/config,var/out/smos,$(wildcard data/config/*.csv)) \
-      $(subst data/misc,var/out/smos,$(wildcard data/misc/*.csv)) \
-      $(subst data/process,var/out/smos,$(wildcard data/process/*.csv)) \
-      $(subst data/hpo,var/out/smos,$(wildcard data/hpo/*.csv))
-
-var/out/warms/%.csv : data/config/%.csv  ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
-var/out/warms/%.csv : data/misc/%.csv    ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
-var/out/warms/%.csv : data/process/%.csv ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
-var/out/warms/%.csv : data/hpo/%.csv     ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
-
-RQ123: 
-	mkdir -p var/out/smos
-	$(MAKE) -j $(SMOS)
 
 
-WARMS= $(subst data/feature,var/out/exploit+llm,$(wildcard data/feature/*.csv))
 
-
-var/out/exploit+llm/%.csv : data/feature/%.csv  ; echo $<; python3 ./lazy.py  --model warms --llm gemini --dataset $< | tee $@
-
-demo: 
-	mkdir -p var/out/exploit+llm
-	$(MAKE) -j $(WARMS)
-
-
-FILES = data/config/SS-C.csv data/config/SS-E.csv data/config/SS-G.csv data/misc/auto93.csv data/hpo/healthCloseIsses12mths0001-hard.csv
 
 WARMS= $(subst data/config,var/out/warms2,$(wildcard data/config/*.csv)) \
       $(subst data/misc,var/out/warms2,$(wildcard data/misc/*.csv)) \
