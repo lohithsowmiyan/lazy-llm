@@ -92,7 +92,7 @@ var/out/warms2/%.csv : data/hpo/%.csv     ; echo $<; python3 ./lazy.py  --model 
 
 RQ123: 
 	mkdir -p var/out/warms2
-	$(MAKE) -j $(SMOS)
+	$(MAKE) -j $(WARMS)
 
 
 
