@@ -80,19 +80,45 @@ docs/%.html : %.py ## .py --> .html
 
 	
 
-WARMS= $(subst data/config,var/out/warms2,$(wildcard data/config/*.csv)) \
-      $(subst data/misc,var/out/warms2,$(wildcard data/misc/*.csv)) \
-      $(subst data/process,var/out/warms2,$(wildcard data/process/*.csv)) \
-      $(subst data/hpo,var/out/warms2,$(wildcard data/hpo/*.csv))
+LOWS = data/config/SS-A.csv data/config/SS-B.csv data/config/SS-C.csv data/config/SS-E.csv data/config/SS-F.csv data/misc/auto93.csv \
+	   data/misc/wc+wc-3d-c4-obj1.csv data/misc/wc+sol-3d-c4-obj1.csv lazy-llm/data/misc/wc+wc-3d-c4-obj1.csv data/config/SS-G.csv  \
+	   data/config/SS-I.csv data/config/SS-J.csv
+	   
+MEDS = data/misc/rs-6d-c3_obj1.csv data/misc/rs-6d-c3_obj2.csv data/misc/sol-6d-c2-obj1.csv data/hpo/healthCloseIsses12mths0001-hard.csv \
+       data/hpo/healthCloseIsses12mths0011-easy.csv data/config/SS-K.csv data/config/SS-L.csv data/process/pom3a.csv data/process/pom3b.csv data/process/pom3c.csv data/process/pom3d.csv \
+	   data/config/SS-S.csv 
 
-var/out/warms2/%.csv : data/config/%.csv  ; echo $<; python3 ./lazy.py  --model warms  --dataset $< | tee $@
-var/out/warms2/%.csv : data/misc/%.csv    ; echo $<; python3 ./lazy.py  --model warms  --dataset $< | tee $@
-var/out/warms2/%.csv : data/process/%.csv ; echo $<; python3 ./lazy.py  --model warms  --dataset $< | tee $@
-var/out/warms2/%.csv : data/hpo/%.csv     ; echo $<; python3 ./lazy.py  --model warms  --dataset $< | tee $@
+HIGHS = data/config/SS-M.csv data/config/SS-N.csv data/config/SS-O.csv data/config/SS-Q.csv data/config/SS-R.csv data/config/SS-U.csv \
+        data/config/SS-X.csv data/config/SS-W.csv data/config/SS-T.csv data/config/X264_AllMeasurements.csv data/config/SQL_AllMeasurements.csv lazy-llm/data/config/Apache_AllMeasurements.csv \
+		data/misc/HSMGP_num.csv data/process/coc1000.csv data/process/coc1000.csv data/process/xomo_flight.csv data/process/xomo_ground.csv lazy-llm/data/process/xomo_osp2.csv
+		
+
+LOWS_OUT  = $(patsubst data/%,var/out/lows/%,$(LOWS))
+MEDS_OUT  = $(patsubst data/%,var/out/meds/%,$(MEDS))
+HIGHS_OUT = $(patsubst data/%,var/out/highs/%,$(HIGHS))
+
+# LOWS
+var/out/lows/%.csv : data/%.csv
+	@mkdir -p $(dir $@)
+	echo $<
+	python3 ./lazy.py --model lows --dataset $< | tee $@
+
+# MEDS
+var/out/meds/%.csv : data/%.csv
+	@mkdir -p $(dir $@)
+	echo $<
+	python3 ./lazy.py --model meds --dataset $< | tee $@
+
+# HIGHS
+var/out/highs/%.csv : data/%.csv
+	@mkdir -p $(dir $@)
+	echo $<
+	python3 ./lazy.py --model highs --dataset $< | tee $@
 
 RQ123: 
-	mkdir -p var/out/warms2
-	$(MAKE) -j $(WARMS)
+	$(MAKE) -j $(LOWS_OUT)
+	$(MAKE) -j $(MEDS_OUT)
+	$(MAKE) -j $(HIGHS_OUT)
 
 
 
