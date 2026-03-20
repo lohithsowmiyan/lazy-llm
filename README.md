@@ -39,6 +39,9 @@ This repo geenrates the reports needed to address research questions 1,2 fro our
 git clone https://github.com/lohithsowmiyan/lazy-llm.git
 cd lazy-llm
 
+#switch to the clusters branch
+git switch clusters
+
 #Install necessary modules
 pip install -r requirements.txt --no-warn-script-location
 
@@ -53,15 +56,13 @@ OPENAI_API_KEY = XXXXX XXXXX (Your key from Open AI)
 
 
 
-
-
 ## Usage/Examples
 
 ```bash
 #Example 1
-python lazy.py --model vanilla --llm llama3-8b --dataset data/misc/auto93.csv
+python lazy.py --model warms --llm gemini-1.5-pro --dataset data/misc/auto93.csv
 #Example 2
-python lazy.py --model vanilla --llm gpt-3.5-turbo --dataset data/misc/wine_quality.csv
+python lazy.py --model warms --llm gpt-3.5-turbo --dataset data/config/SS-A.csv
 ```
 
 ## Run Entire Experiment
@@ -77,7 +78,7 @@ make RQ123
 
 | Parameter | Values     | Description                |
 | :-------- | :------- | :------------------------- |
-| `model` | `vanilla` | Simple Greedy Selector (LLM) |
+| `model` | `warms` | Runs Synthcore |
 | `model` | `smo` | Sequential Model Optimization (Baseline) |
 | `llm` | `llama3-8b`, `gemini-pro`, `phi3-medium`, `gpt-4`  | **Can add any model via llm.py file** |
 | `dataset` | `data/misc/auto93.csv` | Enter the full path for any of the datasets in repository|
@@ -91,24 +92,6 @@ make RQ123
 | `max_tokens`      | `50` | Leave it at default values |
 | `top_p`      | `0 - 1` | Focus levels on the core of the prompt |
 
-
-
-#### Optional Settings
-
-| Parameter | Type     | Description                       |
-| :-------- | :------- | :-------------------------------- |
-| `quantization`      | `True` or  `False` | May affect  model performance |
-| `q_bits`      | `4` or  `8` | Lower value results in low operating cost |
-
-
-## Visualization/Examples
-
-```bash
-#Example 1
-python3 graph.py auto93.csv All
-#Example 2
-python3 graph.py healthCloseIsses12mths0011-easy Mu
-```
 
 
 ## Acknowledgements
